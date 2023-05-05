@@ -1,0 +1,138 @@
+on:
+  workflow_call:
+    inputs:
+      application-name:
+        type: string
+        description: The application name (repository name without api/contract/ui)
+        required: true
+      environment-name:
+        type: string
+        description: The keyword used to define your environment repository
+        required: false
+        default: gitops
+      repository:
+        description: Repository name; format = [organization]/[repository-name]
+        required: true
+        type: string
+      solution-location:
+        description: Additional folders to get to solution file location
+        required: false
+        default: Source/
+        type: string
+      replacements-in:
+        type: string
+        description: Replacement placeholders separated by a semicolon (;)
+        required: false
+        default: ""
+    secrets:
+      aws-region:
+        description: The region in AWS to push to
+        required: true
+      pat-github:
+        description: GitHub PAT
+        required: true
+      replacements-out:
+        description: Replacement values separated by a semicolon (;)
+        required: false
+      azure-api-key:
+        description: The Azure API key
+        required: false
+      azure-source:
+        description: The Azure Artifacts Source
+        required: false
+      azure-feed:
+        description: The Azure Artifacts Feed
+        required: false
+      nuget-api-key:
+        description: The NuGet API key
+        required: false
+jobs:
+  preparations:
+    name: Preparations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repository}}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+          fetch-depth: 0
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechIT/jaytech-pipelines-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
+      - name: Replace placeholders
+        uses: ./workflow/actions/replace-placeholders
+        with:
+          replacements-in: ${{inputs.replacements-in}}
+          replacements-out: ${{secrets.replacements-out}}
+      - name: Upload prepared repository
+        uses: actions/upload-artifact@v3
+        with:
+          name: workflow
+          path: workflow
+          retention-days: 2
+  build:
+    needs: preparations
+    name: Build .NET
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download prepared repository
+        uses: actions/download-artifact@v3
+        with:
+          name: workflow
+          path: workflow
+      - name: .NET Build
+        uses: ./workflow/actions/dotnet-build
+        with:
+          solution-path: ${{inputs.solution-location}}
+  test:
+    name: Test .NET
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download prepared repository
+        uses: actions/download-artifact@v3
+        with:
+          name: workflow
+          path: workflow
+      - name: .NET Test
+        uses: ./workflow/actions/dotnet-test
+        with:
+          solution-path: ${{inputs.solution-location}}
+  continuous-integration:
+    name: Continuous Integration
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download prepared repository
+        uses: actions/download-artifact@v3
+        with:
+          name: workflow
+          path: workflow     
+      - id: semver
+        uses: ./workflow/actions/gitversion-semver
+      - name: nuget-push
+        uses: ./workflow/actions/nuget-push
+        with:
+          software-version: ${{ steps.semver.outputs.semantic-version }}
+          project-folder: workflow/repository/Source
+          nuget-api-key: ${{secrets.nuget-api-key}}
+          azure-api-key: ${{secrets.azure-api-key}}
+          azure-source: ${{secrets.azure-source}}
+          azure-feed: ${{secrets.azure-feed}}
+          folder-prefix: "Assemblies/"      
+      - name: Tag & Release
+        uses: actions/create-release@v1        
+        if: contains('refs/heads/master', github.ref)
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.semver.outputs.semantic-version }}
+          tag_name: ${{ steps.semver.outputs.semantic-version }}     
+        env:
+          GITHUB_TOKEN: ${{ secrets.pat-github }}
