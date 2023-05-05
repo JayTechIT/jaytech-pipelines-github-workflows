@@ -90,9 +90,9 @@ jobs:
         uses: ./workflow/actions/dotnet-build
         with:
           solution-path: ${{inputs.solution-location}}
-          azure-feed: ${{inputs.azure-feed}}
-          azure-source: ${{inputs.azure-source}}
-          azure-api-key: ${{inputs.azure-api-key}}
+          azure-feed: ${{secrets.azure-feed}}
+          azure-source: ${{secrets.azure-source}}
+          azure-api-key: ${{secrets.azure-api-key}}
   test:
     name: Test .NET
     needs: build
@@ -107,9 +107,9 @@ jobs:
         uses: ./workflow/actions/dotnet-test
         with:
           solution-path: ${{inputs.solution-location}}
-          azure-feed: ${{inputs.azure-feed}}
-          azure-source: ${{inputs.azure-source}}
-          azure-api-key: ${{inputs.azure-api-key}}
+          azure-feed: ${{secrets.azure-feed}}
+          azure-source: ${{secrets.azure-source}}
+          azure-api-key: ${{secrets.azure-api-key}}
   continuous-integration:
     name: Continuous Integration
     needs: test
