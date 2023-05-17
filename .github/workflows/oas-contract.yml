@@ -38,3 +38,7 @@ jobs:
           token: ${{ secrets.pat-github }}
           path: workflow/client-generator
           fetch-depth: 0
+      - name: Run Client Generator
+        shell: bash
+        run: |
+          dotnet build ./workflow/client-generator/Source --configuration Release
