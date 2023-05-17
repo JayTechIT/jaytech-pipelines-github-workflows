@@ -1,0 +1,46 @@
+on:
+  workflow_call:
+    inputs:      
+      repository:
+        description: Repository name; format = [organization]/[repository-name]
+        required: true
+        type: string
+    secrets:
+      pat-github:
+        description: GitHub PAT
+        required: true
+      azure-api-key:
+        description: The Azure API key
+        required: false
+      azure-source:
+        description: The Azure Artifacts Source
+        required: false
+      azure-feed:
+        description: The Azure Artifacts Feed
+        required: false
+jobs:
+  build-push-oas:
+    name: Preparations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repository}}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+          fetch-depth: 0
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechIT/jaytech-pipelines-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
+      - name: Checkout client generator
+        uses: actions/checkout@v3
+        with:
+          repository: JayTechIT/jaytech-tools-clis-generators-client
+          token: ${{ secrets.pat-github }}
+          path: workflow/client-generator
+          fetch-depth: 0
