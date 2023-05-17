@@ -61,7 +61,7 @@ jobs:
           dotnet run --launch-profile Production
           ls -A
       - name: nuget-push
-        uses: ./workflow/actions/nuget-push
+        uses: ./workflow/actions/dotnet-publish-nuget
         with:
           software-version: ${{ steps.semver.outputs.semantic-version }}
           project-folder: ./workflow/repository/generated
