@@ -1,5 +1,10 @@
-on:
+on:  
   workflow_call:
+    inputs:
+      namespace:
+        type: string
+        description: The application name (repository name without api/contract/ui)
+        required: true
     secrets:
       pat-github:
         description: GitHub PAT
@@ -34,6 +39,11 @@ jobs:
       - name: Add Azure feed
         shell: bash
         run: dotnet nuget add source ${{ secrets.azure-feed }} --name ${{secrets.azure-source}} --username az --password ${{ secrets.azure-api-key }} --store-password-in-clear-text 
+      - id: semver
+        name: Determine semantic version
+        uses: ./workflow/actions/gitversion-semver
+      - name: Set contract version
+        run: sed -i "s/{{OAS_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/src/oas.yaml
       - name: Checkout client generator
         uses: actions/checkout@v3
         with:
@@ -44,4 +54,10 @@ jobs:
       - name: Run Client Generator
         shell: bash
         run: |
-          dotnet build ./workflow/client-generator/Source --configuration Release
+          sed -i "s~{{IN}}~/workflow/repository/src/oas.yaml~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli/Properties/launchSettings.json
+          sed -i "s~{{OUT}}~/workflow/repository/out~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli/Properties/launchSettings.json
+          sed -i "s~{{NAMESPACE}}~${{inputs.namespace}}~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli/Properties/launchSettings.json
+          cd ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli
+          dotnet run --launch-profile Production
+          ls -A
+      
