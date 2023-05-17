@@ -1,10 +1,5 @@
 on:
   workflow_call:
-    inputs:      
-      repository:
-        description: Repository name; format = [organization]/[repository-name]
-        required: true
-        type: string
     secrets:
       pat-github:
         description: GitHub PAT
