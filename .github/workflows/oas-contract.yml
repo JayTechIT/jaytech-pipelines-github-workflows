@@ -38,7 +38,7 @@ jobs:
           path: workflow/actions
       - name: Add Azure feed
         shell: bash
-        run: dotnet nuget add source ${{ secrets.azure-feed }} --name ${{secrets.azure-source}} --username az --password ${{ secrets.azure-api-key }} --store-password-in-clear-text 
+        run: dotnet nuget add source ${{ secrets.azure-feed }} --name ${{secrets.azure-source}}_2 --username az --password ${{ secrets.azure-api-key }} --store-password-in-clear-text 
       - id: semver
         name: Determine semantic version
         uses: ./workflow/actions/gitversion-semver
