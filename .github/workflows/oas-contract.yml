@@ -69,3 +69,13 @@ jobs:
           azure-source: ${{secrets.azure-source}}
           azure-feed: ${{secrets.azure-feed}}
           add-source: "false"
+      - name: Tag & Release
+        uses: actions/create-release@v1        
+        if: contains('refs/heads/master', github.ref)
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.semver.outputs.semantic-version }}
+          tag_name: ${{ steps.semver.outputs.semantic-version }}     
+        env:
+          GITHUB_TOKEN: ${{ secrets.pat-github }}
