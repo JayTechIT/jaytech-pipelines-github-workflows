@@ -6,6 +6,10 @@ on:
         description: Replacement placeholders separated by a semicolon (;)
         required: false
         default: ""
+      repository:
+        description: Repository name; format = [organization]/[repository-name]
+        required: true
+        type: string
       solution-location:
         description: Additional folders to get to solution file location
         required: false
