@@ -25,6 +25,9 @@ on:
       aws-secret-access-key:
         description: The AWS Secret Access Key
         required: true
+      pat-github:
+        description: GitHub PAT
+        required: true
       replacements-out:
         description: Replacement values separated by a semicolon (;)
         required: false
