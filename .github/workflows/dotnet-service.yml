@@ -25,6 +25,15 @@ on:
       aws-secret-access-key:
         description: The AWS Secret Access Key
         required: true
+      azure-api-key:
+        description: The Azure API key
+        required: false      
+      azure-feed:
+        description: The Azure Artifacts Feed
+        required: false
+      azure-source:
+        description: The Azure Artifacts Source
+        required: false
       pat-github:
         description: GitHub PAT
         required: true
@@ -75,6 +84,9 @@ jobs:
         uses: ./workflow/actions/dotnet-test
         with:
           solution-path: ${{inputs.solution-location}}
+          azure-feed: ${{secrets.azure-feed}}
+          azure-source: ${{secrets.azure-source}}
+          azure-api-key: ${{secrets.azure-api-key}}
   continuous-delivery:
     name: Continuous Delivery
     needs: test
