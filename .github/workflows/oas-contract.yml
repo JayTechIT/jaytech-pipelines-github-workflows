@@ -54,10 +54,10 @@ jobs:
       - name: Run Client Generator
         shell: bash
         run: |
-          sed -i "s~{{IN}}~../../../../../workflow/repository/src/oas.yaml~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli/Properties/launchSettings.json
-          sed -i "s~{{OUT}}~../../../../../workflow/repository/generated~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli/Properties/launchSettings.json
-          sed -i "s~{{NAMESPACE}}~${{inputs.namespace}}~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli/Properties/launchSettings.json
-          cd ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration.Cli
+          sed -i "s~{{IN}}~../../../../../workflow/repository/src/oas.yaml~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration/Properties/launchSettings.json
+          sed -i "s~{{OUT}}~../../../../../workflow/repository/generated~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration/Properties/launchSettings.json
+          sed -i "s~{{NAMESPACE}}~${{inputs.namespace}}~g" ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration/Properties/launchSettings.json
+          cd ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration
           dotnet run --launch-profile Production
           ls -A
       - name: nuget-push
