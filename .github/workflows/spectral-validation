@@ -1,0 +1,39 @@
+on:
+  workflow_call:
+    inputs:      
+      source-dir: 
+        description: The source directory
+        required: false
+        default: "./"
+      aws-s3-bucket:
+        description: The name of the AWS s3 bucket
+        required: true
+      aws-region:
+        description: The AWS region
+        required: false
+        default: "eu-west-1"        
+    secrets:
+      aws-access-key-id:
+        description: The AWS access key ID
+        required: true
+      aws-secret-access-key:
+        description: The AWS secret access key
+        required: true
+      pat-github:
+        description: GitHub PAT
+        required: true      
+jobs:
+  aws-s3-push:
+    name: Push to AWS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push to Amazon S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ inputs.aws-s3-bucket }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+          AWS_REGION: ${{inputs.aws-region}}
+          SOURCE_DIR: ${{inputs.source-dir}}
