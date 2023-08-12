@@ -1,10 +1,10 @@
 on:
   workflow_call:
-    inputs:      
-      source-dir: 
-        description: The source directory
-        required: false
-        default: "./"
+    inputs:
+      repository:
+        description: Repository name; format = [organization]/[repository-name]
+        required: true
+        type: string
       aws-s3-bucket:
         description: The name of the AWS s3 bucket
         required: true
@@ -27,6 +27,13 @@ jobs:
     name: Push to AWS
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repository}}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+          fetch-depth: 0
       - name: Push to Amazon S3
         uses: jakejarvis/s3-sync-action@master
         with:
@@ -36,4 +43,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
           AWS_REGION: ${{inputs.aws-region}}
-          SOURCE_DIR: ${{inputs.source-dir}}
+          SOURCE_DIR: workflow/repository
