@@ -123,28 +123,25 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-  sync-environment:
-    name: Sync Environment
-    needs: continuous-delivery
-    runs-on: ubuntu-latest
-    if: ${{ inputs.sync-environment == 'true' }}
-    steps:
-      - name: Checkout GitOps
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Checkout GitOps
         uses: actions/checkout@v3
         with:
           ref: "development"
           repository: ${{ github.repository_owner }}/${{ inputs.application-name }}-${{inputs.environment-name}}
           token: ${{secrets.pat-github}}
           path: workflow/gitops
-      - name: Set GitOps version
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Set GitOps version
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: "./workflow/gitops/version.yml"
           propertyPath: "version.api"
-          value: ${{inputs.software-version}}
+          value: ${{ steps.semver.outputs.semantic-version }}
           commitChange: false
           updateFile: true
-      - name: Push to GitOps
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Push to GitOps
         id: push_directory
         uses: cpina/github-action-push-to-another-repository@v1.4.2
         env:
@@ -153,5 +150,5 @@ jobs:
           source-directory: workflow/gitops
           destination-github-username: ${{ github.repository_owner }}
           destination-repository-name: ${{ inputs.application-name }}-${{inputs.environment-name}}
-          commit-message: Updated ${{ github.event.repository.name }} version to ${{inputs.software-version}}
+          commit-message: Updated ${{ github.event.repository.name }} version to ${{ steps.semver.outputs.semantic-version }}
           target-branch: development
