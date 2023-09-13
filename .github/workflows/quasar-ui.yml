@@ -79,7 +79,7 @@ jobs:
         with:
           folder: ${{inputs.source-folder}}
   
-  tag-release:
+  continuous-delivery:
     if: ${{ always() }}
     needs: ["build-web"]
     runs-on: ubuntu-latest
