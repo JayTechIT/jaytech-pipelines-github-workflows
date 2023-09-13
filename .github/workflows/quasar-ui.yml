@@ -1,0 +1,105 @@
+on:
+  workflow_call:
+    inputs:
+      build-web:
+        type: boolean
+        description: Run Quasar build for web?
+        required: false
+        default: false
+      replacements-in:
+        type: string
+        description: Replacement placeholders separated by a semicolon (;)
+        required: false
+        default: ""
+      source-folder:
+        type: string
+        description: Root folder of the source code
+        required: false
+        default: "./workflow/repository"
+    secrets:
+      pat-github:
+        description: GitHub PAT
+        required: true
+      replacements-out:
+        description: Replacement values separated by a semicolon (;)
+        required: false
+
+jobs:
+  preparations:
+    name: Preparations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repository}}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechIT/jaytech-tools-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
+      - name: Replace placeholders
+        uses: ./workflow/actions/replace-placeholders
+        with:
+          replacements-in: ${{inputs.replacements-in}}
+          replacements-out: ${{secrets.replacements-out}}
+      - name: Upload prepared repository
+        uses: actions/upload-artifact@v3
+        with:
+          name: workflow
+          path: workflow
+          retention-days: 2
+  build-web:
+    if: ${{inputs.build-web}}
+    needs: preparations
+    name: Build Quasar Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download prepared repository
+        uses: actions/download-artifact@v3
+        with:
+          name: workflow
+          path: workflow
+      - name: Quasar Build Web
+        uses: ./workflow/actions/quasar-build-web
+        with:
+          folder: ${{inputs.source-folder}}
+  
+  tag-release:
+    if: ${{ always() }}
+    needs: ["build-web"]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download web contents      
+        uses: actions/download-artifact@v1      
+        with:
+          name: quasar-build-web
+          path: ./output/web
+      - name: TAR
+        run: |
+          tar -czvf ./output/web/quasar-web.tar.gz ./output/web/*
+      - id: semver
+        uses: ./workflow/actions/gitversion-semver
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: false
+          release_name: ${{ steps.semver.outputs.semantic-version }}
+          tag_name: ${{ steps.semver.outputs.semantic-version }}        
+        env:
+          GITHUB_TOKEN: ${{ secrets.pat-github }}
+      - name: Upload quasar-web to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.pat-github }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output/web/quasar-web.tar.gz
+          asset_name: quasar-web.tar.gz
+          asset_content_type: application/gzip
