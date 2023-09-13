@@ -74,6 +74,11 @@ jobs:
     needs: ["build-web"]
     runs-on: ubuntu-latest
     steps:
+      - name: Download prepared repository
+        uses: actions/download-artifact@v3
+        with:
+          name: workflow
+          path: workflow
       - name: Download web contents      
         uses: actions/download-artifact@v1      
         with:
