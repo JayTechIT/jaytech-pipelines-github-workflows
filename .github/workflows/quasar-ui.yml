@@ -123,20 +123,16 @@ jobs:
           asset_path: ./output/web/quasar-web.tar.gz
           asset_name: quasar-web.tar.gz
           asset_content_type: application/gzip
-  sync-environment:
-    name: Sync Environment
-    needs: continuous-delivery
-    runs-on: ubuntu-latest
-    if: ${{ inputs.sync-environment == 'true' }}
-    steps:
-      - name: Checkout GitOps
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Checkout GitOps
         uses: actions/checkout@v3
         with:
           ref: "development"
           repository: ${{ github.repository_owner }}/${{ inputs.application-name }}-${{inputs.environment-name}}
           token: ${{secrets.pat-github}}
           path: workflow/gitops
-      - name: Set GitOps version
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Set GitOps version
         uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: "./workflow/gitops/version.yml"
@@ -144,7 +140,8 @@ jobs:
           value: ${{ steps.semver.outputs.semantic-version }}
           commitChange: false
           updateFile: true
-      - name: Push to GitOps
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Push to GitOps
         id: push_directory
         uses: cpina/github-action-push-to-another-repository@v1.4.2
         env:
