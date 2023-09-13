@@ -15,6 +15,11 @@ on:
         required: false
         default: Source/
         type: string
+      sync-environment:
+        description: Sync the new version with a -environment repository
+        required: false
+        type: string
+        default: "false"        
     secrets:
       aws-region:
         description: The region in AWS to push to
@@ -118,3 +123,35 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
+  sync-gitops:
+    name: Sync GitOps
+    needs: continuous-delivery
+    runs-on: ubuntu-latest
+    if: ${{ inputs.sync-environment == 'true' }}
+    steps:
+      - name: Checkout GitOps
+        uses: actions/checkout@v3
+        with:
+          ref: "development"
+          repository: ${{ github.repository_owner }}/${{ inputs.application-name }}-${{inputs.environment-name}}
+          token: ${{secrets.pat-github}}
+          path: workflow/gitops
+      - name: Set GitOps version
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: "./workflow/gitops/version.yml"
+          propertyPath: "version.api"
+          value: ${{inputs.software-version}}
+          commitChange: false
+          updateFile: true
+      - name: Push to GitOps
+        id: push_directory
+        uses: cpina/github-action-push-to-another-repository@v1.4.2
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.pat-github }}
+        with:
+          source-directory: workflow/gitops
+          destination-github-username: ${{ github.repository_owner }}
+          destination-repository-name: ${{ inputs.application-name }}-${{inputs.environment-name}}
+          commit-message: Updated ${{ github.event.repository.name }} version to ${{inputs.software-version}}
+          target-branch: development
