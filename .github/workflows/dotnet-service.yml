@@ -1,6 +1,15 @@
 on:
   workflow_call:    
     inputs:
+      application-name:
+        type: string
+        description: The application name (repository name without api/contract/ui)
+        required: true
+      environment-name:
+        type: string
+        description: The keyword used to define your environment repository
+        required: false
+        default: environment
       replacements-in:
         type: string
         description: Replacement placeholders separated by a semicolon (;)
