@@ -123,8 +123,8 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-  sync-gitops:
-    name: Sync GitOps
+  sync-environment:
+    name: Sync Environment
     needs: continuous-delivery
     runs-on: ubuntu-latest
     if: ${{ inputs.sync-environment == 'true' }}
