@@ -141,7 +141,7 @@ jobs:
         with:
           valueFile: "./workflow/gitops/version.yml"
           propertyPath: "version.ui"
-          value: ${{inputs.software-version}}
+          value: ${{ steps.semver.outputs.semantic-version }}
           commitChange: false
           updateFile: true
       - name: Push to GitOps
@@ -153,5 +153,5 @@ jobs:
           source-directory: workflow/gitops
           destination-github-username: ${{ github.repository_owner }}
           destination-repository-name: ${{ inputs.application-name }}-${{inputs.environment-name}}
-          commit-message: Updated ${{ github.event.repository.name }} version to ${{inputs.software-version}}
+          commit-message: Updated ${{ github.event.repository.name }} version to ${{ steps.semver.outputs.semantic-version }}
           target-branch: development
