@@ -5,6 +5,11 @@ on:
         type: string
         description: The application name (repository name without api/contract/ui)
         required: true
+      dotnet-version:
+        type: string
+        description: Specify which .NET version to use
+        required: false
+        default: "7.x"
     secrets:
       pat-github:
         description: GitHub PAT
@@ -69,6 +74,7 @@ jobs:
           azure-source: ${{secrets.azure-source}}
           azure-feed: ${{secrets.azure-feed}}
           add-source: "false"
+          dotnet-version: ${{inputs.dotnet-version}}
       - name: Tag & Release
         uses: actions/create-release@v1        
         if: contains('refs/heads/master', github.ref)
