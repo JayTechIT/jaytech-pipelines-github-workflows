@@ -52,8 +52,8 @@ on:
         description: The NuGet API key
         required: false
 jobs:
-  preparations:
-    name: Preparations
+  dotnet-library-pipeline:
+    name: .NET Library Pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -74,57 +74,14 @@ jobs:
         uses: ./workflow/actions/replace-placeholders
         with:
           replacements-in: ${{inputs.replacements-in}}
-          replacements-out: ${{secrets.replacements-out}}
-      - name: Upload prepared repository
-        uses: actions/upload-artifact@v3
-        with:
-          name: workflow
-          path: workflow
-          retention-days: 2
-  build:
-    needs: preparations
-    name: Build .NET
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow
-      - name: .NET Build
-        uses: ./workflow/actions/dotnet-build
-        with:
-          solution-path: ${{inputs.solution-location}}
-          azure-feed: ${{secrets.azure-feed}}
-          azure-source: ${{secrets.azure-source}}
-          azure-api-key: ${{secrets.azure-api-key}}
-  test:
-    name: Test .NET
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow
+          replacements-out: ${{secrets.replacements-out}}     
       - name: .NET Test
         uses: ./workflow/actions/dotnet-test
         with:
           solution-path: ${{inputs.solution-location}}
           azure-feed: ${{secrets.azure-feed}}
           azure-source: ${{secrets.azure-source}}
-          azure-api-key: ${{secrets.azure-api-key}}
-  continuous-integration:
-    name: Continuous Integration
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow     
+          azure-api-key: ${{secrets.azure-api-key}}  
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: nuget-push

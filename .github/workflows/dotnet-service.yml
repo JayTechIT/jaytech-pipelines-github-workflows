@@ -56,8 +56,8 @@ on:
         required: false
 
 jobs:
-  preparations:
-    name: Preparations
+  dotnet-service-pipeline:
+    name: .NET Service Pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -78,40 +78,14 @@ jobs:
         uses: ./workflow/actions/replace-placeholders
         with:
           replacements-in: ${{inputs.replacements-in}}
-          replacements-out: ${{secrets.replacements-out}}
-      - name: Upload prepared repository
-        uses: actions/upload-artifact@v3
-        with:
-          name: workflow
-          path: workflow
-          retention-days: 2
-  test:
-    name: Test
-    needs: preparations
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow
+          replacements-out: ${{secrets.replacements-out}}  
       - name: .NET Test
         uses: ./workflow/actions/dotnet-test
         with:
           solution-path: ${{inputs.solution-location}}
           azure-feed: ${{secrets.azure-feed}}
           azure-source: ${{secrets.azure-source}}
-          azure-api-key: ${{secrets.azure-api-key}}
-  continuous-delivery:
-    name: Continuous Delivery
-    needs: test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow
+          azure-api-key: ${{secrets.azure-api-key}}  
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: Push Docker Image To AWS
