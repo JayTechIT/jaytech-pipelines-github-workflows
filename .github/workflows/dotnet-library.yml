@@ -101,6 +101,7 @@ jobs:
           folder-prefix: "Assemblies/"
           nuget: ${{inputs.nuget}}
           dotnet-version: ${{inputs.dotnet-version}}
+          add-source: false
       - name: Tag & Release
         uses: actions/create-release@v1        
         if: contains('refs/heads/master', github.ref)
