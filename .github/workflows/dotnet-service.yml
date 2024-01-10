@@ -57,7 +57,7 @@ on:
 
 jobs:
   preparations:
-    name: Preparations
+    name: .NET Service Pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
