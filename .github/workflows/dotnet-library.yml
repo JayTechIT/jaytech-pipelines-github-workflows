@@ -29,6 +29,11 @@ on:
         description: Push to nuget? If 'false' it will push to azure
         required: false
         default: "true"
+      dotnet-version:
+        type: string
+        description: Specify which .NET version to use
+        required: false
+        default: "7.x"
     secrets:
       aws-region:
         description: The region in AWS to push to
@@ -95,6 +100,7 @@ jobs:
           azure-feed: ${{secrets.azure-feed}}
           folder-prefix: "Assemblies/"
           nuget: ${{inputs.nuget}}
+          dotnet-version: ${{inputs.dotnet-version}}
       - name: Tag & Release
         uses: actions/create-release@v1        
         if: contains('refs/heads/master', github.ref)
