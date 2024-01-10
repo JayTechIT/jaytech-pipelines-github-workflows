@@ -56,7 +56,7 @@ on:
         required: false
 
 jobs:
-  preparations:
+  dotnet-service-pipeline:
     name: .NET Service Pipeline
     runs-on: ubuntu-latest
     steps:

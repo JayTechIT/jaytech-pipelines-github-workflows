@@ -52,7 +52,7 @@ on:
         description: The NuGet API key
         required: false
 jobs:
-  preparations:
+  dotnet-library-pipeline:
     name: .NET Library Pipeline
     runs-on: ubuntu-latest
     steps:
