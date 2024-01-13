@@ -28,6 +28,10 @@ jobs:
     name: Build + NuGet push
     runs-on: ubuntu-latest
     steps:
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
