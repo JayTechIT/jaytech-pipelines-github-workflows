@@ -28,10 +28,6 @@ jobs:
     name: Build + NuGet push
     runs-on: ubuntu-latest
     steps:
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: ${{ inputs.dotnet-version }}
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -56,7 +52,7 @@ jobs:
       - name: Checkout client generator
         uses: actions/checkout@v3
         with:
-          repository: JayTechIT/jaytech-tools-clis-generators-client
+          repository: JayTechIT/jaytech-tools-clis-generators-client@1.0.17
           token: ${{ secrets.pat-github }}
           path: workflow/client-generator
           fetch-depth: 0
