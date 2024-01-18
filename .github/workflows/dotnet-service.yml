@@ -87,8 +87,9 @@ jobs:
           azure-source: ${{secrets.azure-source}}
           azure-api-key: ${{secrets.azure-api-key}}  
       - id: semver
-        uses: ./workflow/actions/gitversion-semver
-      - name: Push Docker Image To AWS
+        uses: ./workflow/actions/gitversion-semver      
+      - if: ${{ inputs.sync-environment == 'true' }}
+        name: Push Docker Image To AWS
         uses: ./workflow/actions/docker-push-aws
         with:
           container-name: ${{ github.event.repository.name }}
