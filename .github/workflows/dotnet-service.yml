@@ -106,7 +106,7 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-      - if: contains('refs/heads/master', github.ref) && ${{ inputs.sync-environment == 'true' }}
+      - if: ${{ inputs.sync-environment == 'true' }}
         name: Checkout GitOps
         uses: actions/checkout@v3
         with:
@@ -114,7 +114,7 @@ jobs:
           repository: ${{ github.repository_owner }}/${{ inputs.application-name }}-${{inputs.environment-name}}
           token: ${{secrets.pat-github}}
           path: workflow/gitops
-      - if: contains('refs/heads/master', github.ref) && ${{ inputs.sync-environment == 'true' }}
+      - if: ${{ inputs.sync-environment == 'true' }}
         name: Set GitOps version
         uses: fjogeleit/yaml-update-action@main
         with:
@@ -123,7 +123,7 @@ jobs:
           value: ${{ steps.semver.outputs.semantic-version }}
           commitChange: false
           updateFile: true
-      - if: contains('refs/heads/master', github.ref) && ${{ inputs.sync-environment == 'true' }}
+      - if: ${{ inputs.sync-environment == 'true' }}
         name: Push to GitOps
         id: push_directory
         uses: cpina/github-action-push-to-another-repository@v1.4.2
