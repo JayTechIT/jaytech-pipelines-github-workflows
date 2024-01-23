@@ -52,8 +52,7 @@ jobs:
       - name: Checkout client generator
         uses: actions/checkout@v3
         with:
-          repository: JayTechIT/jaytech-tools-clis-generators-client
-          ref: "1.0.17"
+          repository: JayTechIT/jaytech-tools-clis-generators-client          
           token: ${{ secrets.pat-github }}
           path: workflow/client-generator
           fetch-depth: 0
