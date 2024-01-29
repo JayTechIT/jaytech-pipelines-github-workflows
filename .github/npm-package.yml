@@ -1,0 +1,50 @@
+on:
+  workflow_call:
+    inputs:
+      private-feed:
+        description: Use a private NPM feed?
+        required: false
+        type: string
+        default: "true"    
+    secrets:
+      azure-api-key:
+        description: The Azure API key
+        required: false      
+      azure-feed:
+        description: The Azure Artifacts Feed
+        required: false
+      azure-source:
+        description: The Azure Artifacts Source
+        required: false
+      pat-github:
+        description: GitHub PAT
+        required: true
+
+jobs:
+  npm-package-pipeline:
+    name: NPM Package Pipeline
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repository}}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+          fetch-depth: 0
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechIT/jaytech-pipelines-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
+      - id: semver
+        uses: ./workflow/actions/gitversion-semver   
+      - name: Replace package version
+        run: |
+          sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" package.json
+      - if: ${{ inputs.private-feed == 'true' }}
+        name: Publish To Private Feed
+        run: |
+          npm publish
