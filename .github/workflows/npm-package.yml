@@ -54,10 +54,11 @@ jobs:
           repository: JayTechIT/jaytech-pipelines-github-actions
           token: ${{ secrets.pat-github }}
           path: workflow/actions
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: "20.x"
           registry-url: ${{secrets.azure-feed}}
+          scope: jaytech
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
@@ -72,6 +73,8 @@ jobs:
         run: cp ./workflow/repository/.npmrc ~/.npmrc
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
-        run: npm publish
+        run: |
+          npm ci
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
