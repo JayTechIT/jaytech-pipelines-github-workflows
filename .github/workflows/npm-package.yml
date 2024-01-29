@@ -72,5 +72,4 @@ jobs:
         working-directory: ./workflow/repository
         run: |
           cp .npmrc ~/.npmrc
-          npm install
           npm publish
