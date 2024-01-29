@@ -61,21 +61,17 @@ jobs:
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
+        working-directory: ./workflows/repository
         run: |
           sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/package.json
-      - uses: ponicode/azure-devops-npm-action@master
-        with:
-          organisation: ${{inputs.organization}}
-          project: ${{inputs.project}}
-          registry: ${{ secrets.azure-feed }}
-          user: user
-          password: ${{ secrets.azure-api-key }}
-          email: auriorx@gmail.com
-          scope: ${{inputs.scope}}
+          sed -i "s/{{FEED}}/${{ secrets.azure-feed }}/g" ./workflow/repository/.npmrc
+          sed -i "s/{{SCOPE}}/${{ inputs.scope }}/g" ./workflow/repository/.npmrc
+          sed -i "s/{{USER}}/${{ inputs.organization }}/g" ./workflow/repository/.npmrc
+          sed -i "s/{{PASSWORD}}/${{ secrets.azure-api-key }}/g" ./workflow/repository/.npmrc
+          sed -i "s/{{EMAIL}}/a@a.a/g" ./workflow/repository/.npmrc
+
+          cp ./workflows/repository/.npmrc ~/.npmrc
+          npm install
+          npm publish
+
       - run: cp `pwd`/.npmrc ~ # We need the .npmrc file in the $HOME directory
-      - name: Install dependencies
-        run: npm install
-      - name: Build
-        run: npm run build
-      - name: Publish to Azure
-        run: npm publish
