@@ -74,6 +74,7 @@ jobs:
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
         run: |
+          npm install
           npm ci
           npm publish
         env:
