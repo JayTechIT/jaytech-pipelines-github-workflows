@@ -58,7 +58,6 @@ jobs:
         with:
           node-version: 18
           registry-url: ${{secrets.azure-feed}}
-          scope: jaytech
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
@@ -71,10 +70,14 @@ jobs:
           cat ./workflow/repository/.npmrc
       - name: Copy .npmrc to home directory
         run: cp ./workflow/repository/.npmrc ~/.npmrc
+      - run: npm config set @wv8:registry ${{secrets.azure-feed}}
+      - run: npm install --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
+        working-directory: ./workflow/repository/
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
         run: |
-          npm install
           npm ci
           npm publish
         env:
