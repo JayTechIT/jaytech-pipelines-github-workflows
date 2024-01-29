@@ -65,7 +65,7 @@ jobs:
           sed -i "s#{{PACKAGE_VERSION}}#${{ steps.semver.outputs.semantic-version }}#g" ./workflow/repository/package.json
           sed -i "#/{{FEED}}#${{ secrets.azure-feed }}#g" ./workflow/repository/package.json
       - name: Publish to Azure Artifacts
-        working-directory: ./workflows/repository/
+        working-directory: ./workflow/repository/
         run: npm ci && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
