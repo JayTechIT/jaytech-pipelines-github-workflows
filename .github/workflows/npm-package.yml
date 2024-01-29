@@ -61,7 +61,7 @@ jobs:
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
-        working-directory: ./workflows/repository
+        working-directory: ./workflows/repository/
         run: |
           sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" package.json
           sed -i "s/{{FEED}}/${{ secrets.azure-feed }}/g" .npmrc
