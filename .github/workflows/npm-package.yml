@@ -6,6 +6,21 @@ on:
         required: false
         type: string
         default: "true"
+      organization:
+        description: Organization in Azure artifacts
+        required: false
+        type: string
+        default: "JayTechIT"
+      project:
+        description: Project in Azure artifacts
+        required: false
+        type: string
+        default: "JayTechUI"
+      scope:
+        description: Scope for package
+        required: false
+        type: string
+        default: "jaytech"
     secrets:
       azure-api-key:
         description: The Azure API key
@@ -48,13 +63,19 @@ jobs:
       - name: Replace package version
         run: |
           sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/package.json
-      - if: ${{ inputs.private-feed == 'true' }}
-        working-directory: ./workflow/repository/
-        run: |
-          npm install
-          npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
-          vsts-npm-auth -config .npmrc
-          npm ci
-          npm publish --registry=${{secrets.azure-feed}}        
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
+      - uses: ponicode/azure-devops-npm-action@master
+        with:
+          organisation: ${{inputs.organization}}
+          project: ${{inputs.project}}
+          registry: ${{ secrets.azure-feed }}
+          user: user
+          password: ${{ secrets.azure-api-key }}
+          email: auriorx@gmail.com
+          scope: ${{inputs.scope}}
+      - run: cp `pwd`/.npmrc ~ # We need the .npmrc file in the $HOME directory
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Publish to Azure
+        run: npm publish
