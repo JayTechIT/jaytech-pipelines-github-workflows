@@ -39,14 +39,17 @@ jobs:
           repository: JayTechIT/jaytech-pipelines-github-actions
           token: ${{ secrets.pat-github }}
           path: workflow/actions
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "20.x"
+          registry-url: ${{secrets.azure-feed}}
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
         run: |
-          ls -A -R
           sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/package.json
-          sed -i "s/{{NPM_TOKEN}}/${{ secrets.azure-api-key }}/g" ./workflow/repository/.npmrc
       - if: ${{ inputs.private-feed == 'true' }}
         name: Publish To Private Feed
-        run: |
-          npm publish ./workflow/repository/ --registry=${{secrets.azure-feed}}
+        run: npm publish ./workflow/repository/ --registry=${{secrets.azure-feed}}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
