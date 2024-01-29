@@ -48,5 +48,5 @@ jobs:
       - if: ${{ inputs.private-feed == 'true' }}
         name: Publish To Private Feed
         run: |
-          echo "//${{secrets.azure-feed}}/:_authToken=\${{ secrets.azure-api-key }}" > .npmrc
+          echo "//${{secrets.azure-feed}}/:_authToken=\${{ secrets.azure-api-key }}" > ./workflow/repository/.npmrc
           npm publish ./workflow/repository/
