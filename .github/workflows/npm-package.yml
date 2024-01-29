@@ -76,3 +76,5 @@ jobs:
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
         run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ steps.encode_key.outputs.encoded_key }}
