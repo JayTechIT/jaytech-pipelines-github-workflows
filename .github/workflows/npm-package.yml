@@ -62,8 +62,9 @@ jobs:
         uses: ./workflow/actions/gitversion-semver
       - name: Encode Azure API Key
         run: |
-          KEY=$(node -e "require('readline').createInterface({input: process.stdin, output: process.stdout, historySize: 0}).question('PAT> ', p => { console.log(Buffer.from(p.trim()).toString('base64')); process.exit(); })")
-          echo "::set-output name=encoded_key::$KEY"
+          KEY=${{ secrets.azure-api-key }}
+          ENCODED_KEY=$(echo -n "$KEY" | base64)
+          echo "::set-output name=encoded_key::$ENCODED_KEY"
         id: encode_key
       - name: Replace package version
         run: |
