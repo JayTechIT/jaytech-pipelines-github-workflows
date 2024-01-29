@@ -69,7 +69,7 @@ jobs:
           sed -i "#/{{PASSWORD}}#${{ secrets.azure-api-key }}#g" ./workflow/repository/.npmrc
           sed -i "#/{{EMAIL}}#a@a.a#g" ./workflow/repository/.npmrc
       - name: NPM publish
-        working-directory: ./workflows/repository
+        working-directory: ./workflow/repository
         run: |
           cp .npmrc ~/.npmrc
           npm install
