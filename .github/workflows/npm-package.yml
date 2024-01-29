@@ -49,11 +49,10 @@ jobs:
         run: |
           sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/package.json
       - if: ${{ inputs.private-feed == 'true' }}
-        run: npm install
-      - if: ${{ inputs.private-feed == 'true' }}
-        run: npm ci
-      - if: ${{ inputs.private-feed == 'true' }}
-        name: Publish To Private Feed
-        run: npm publish ./workflow/repository/ --registry=${{secrets.azure-feed}}
+        working-directory: ./workflow/repository/
+        run: |
+          npm install
+          npm ci
+          npm publish ./workflow/repository/ --registry=${{secrets.azure-feed}}        
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
