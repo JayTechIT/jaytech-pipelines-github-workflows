@@ -66,6 +66,6 @@ jobs:
           sed -i "#/{{FEED}}#${{ secrets.azure-feed }}#g" ./workflow/repository/package.json
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
-        run: npm ci && npm publish
+        run: npm install && npm ci && npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
