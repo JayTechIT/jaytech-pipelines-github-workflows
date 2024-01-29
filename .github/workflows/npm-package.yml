@@ -52,7 +52,9 @@ jobs:
         working-directory: ./workflow/repository/
         run: |
           npm install
+          npm install -g vsts-npm-auth --registry https://registry.npmjs.com --always-auth false
+          vsts-npm-auth -config .npmrc
           npm ci
-          npm publish ./workflow/repository/ --registry=${{secrets.azure-feed}}        
+          npm publish --registry=${{secrets.azure-feed}}        
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
