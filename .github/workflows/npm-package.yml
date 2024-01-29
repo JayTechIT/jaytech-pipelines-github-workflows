@@ -6,21 +6,21 @@ on:
         required: false
         type: string
         default: "true"
+      feed:
+        description: Project in Azure artifacts
+        required: false
+        type: string
+        default: "JayTechUI"
       organization:
         description: Organization in Azure artifacts
         required: false
         type: string
         default: "JayTechIT"
-      registry:
-        description: Project in Azure artifacts
-        required: false
-        type: string
-        default: "JayTechUI"
-      scope:
+      project:
         description: Scope for package
         required: false
         type: string
-        default: "jaytech"
+        default: "JayTech"
     secrets:
       azure-api-key:
         description: The Azure API key
@@ -64,7 +64,8 @@ jobs:
         run: |
           sed -i "s#{{PACKAGE_VERSION}}#${{ steps.semver.outputs.semantic-version }}#g" ./workflow/repository/package.json
           sed -i "s#{{ORGANIZATION_NAME}}#${{ inputs.organization }}#g" ./workflow/repository/.npmrc
-          sed -i "s#{{FEED_NAME}}#${{ inputs.registry }}#g" ./workflow/repository/.npmrc
+          sed -i "s#{{PROJECT_NAME}}#${{ inputs.project }}#g" ./workflow/repository/.npmrc
+          sed -i "s#{{FEED_NAME}}#${{ inputs.feed }}#g" ./workflow/repository/.npmrc
           sed -i "s#{{TOKEN}}#${{ secrets.azure-api-key }}#g" ./workflow/repository/.npmrc
           cat ./workflow/repository/.npmrc
       - name: Publish to Azure Artifacts
