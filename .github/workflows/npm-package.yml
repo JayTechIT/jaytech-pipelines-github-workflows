@@ -11,7 +11,7 @@ on:
         required: false
         type: string
         default: "JayTechIT"
-      project:
+      registry:
         description: Project in Azure artifacts
         required: false
         type: string
@@ -60,12 +60,17 @@ jobs:
           registry-url: ${{secrets.azure-feed}}
       - id: semver
         uses: ./workflow/actions/gitversion-semver
+      - name: Encode Azure API Key
+        run: |
+          KEY=$(node -e "require('readline').createInterface({input: process.stdin, output: process.stdout, historySize: 0}).question('PAT> ', p => { console.log(Buffer.from(p.trim()).toString('base64')); process.exit(); })")
+          echo "::set-output name=encoded_key::$KEY"
+        id: encode_key
       - name: Replace package version
         run: |
           sed -i "s#{{PACKAGE_VERSION}}#${{ steps.semver.outputs.semantic-version }}#g" ./workflow/repository/package.json
-          sed -i "#/{{FEED}}#${{ secrets.azure-feed }}#g" ./workflow/repository/package.json
+          sed -i "#/{{ORGANIZATION_NAME}}#${{ inputs.organization }}#g" ./workflow/repository/.npmrc
+          sed -i "#/{{FEED_NAME}}#${{ inputs.registry }}#g" ./workflow/repository/.npmrc
+          sed -i "s#{{TOKEN}}#${{ steps.encode_key.outputs.encoded_key }}#g" ./workflow/repository/.npmrc
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
-        run: npm install && npm ci && npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
+        run: npm publish
