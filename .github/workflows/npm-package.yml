@@ -62,12 +62,12 @@ jobs:
         uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
         run: |
-          sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/package.json
-          sed -i "s/{{FEED}}/${{ secrets.azure-feed }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{SCOPE}}/${{ inputs.scope }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{USER}}/${{ inputs.organization }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{PASSWORD}}/${{ secrets.azure-api-key }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{EMAIL}}/a@a.a/g" ./workflow/repository/.npmrc
+          sed -i "s#{{PACKAGE_VERSION}}#${{ steps.semver.outputs.semantic-version }}#g" ./workflow/repository/package.json
+          sed -i "#/{{FEED}}#${{ secrets.azure-feed }}#g" ./workflow/repository/.npmrc
+          sed -i "#/{{SCOPE}}#${{ inputs.scope }}#g" ./workflow/repository/.npmrc
+          sed -i "#/{{USER}}#${{ inputs.organization }}#g" ./workflow/repository/.npmrc
+          sed -i "#/{{PASSWORD}}#${{ secrets.azure-api-key }}#g" ./workflow/repository/.npmrc
+          sed -i "#/{{EMAIL}}#a@a.a#g" ./workflow/repository/.npmrc
           cp ./workflows/repository/.npmrc ~/.npmrc
       - name: NPM publish
         working-directory: ./workflows/repository
