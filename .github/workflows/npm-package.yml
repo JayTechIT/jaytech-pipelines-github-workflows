@@ -82,7 +82,6 @@ jobs:
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
         run: |
-          npm ci
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
