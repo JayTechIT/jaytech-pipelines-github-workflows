@@ -5,11 +5,11 @@ on:
         description: Use a private NPM feed?
         required: false
         type: string
-        default: "true"    
+        default: "true"
     secrets:
       azure-api-key:
         description: The Azure API key
-        required: false      
+        required: false
       azure-feed:
         description: The Azure Artifacts Feed
         required: false
@@ -40,7 +40,7 @@ jobs:
           token: ${{ secrets.pat-github }}
           path: workflow/actions
       - id: semver
-        uses: ./workflow/actions/gitversion-semver   
+        uses: ./workflow/actions/gitversion-semver
       - name: Replace package version
         run: |
           ls -A -R
@@ -48,4 +48,4 @@ jobs:
       - if: ${{ inputs.private-feed == 'true' }}
         name: Publish To Private Feed
         run: |
-          npm publish
+          npm publish ./workflow/repository/
