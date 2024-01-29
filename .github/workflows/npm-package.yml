@@ -63,12 +63,12 @@ jobs:
       - name: Replace package version
         working-directory: ./workflows/repository
         run: |
-          sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/package.json
-          sed -i "s/{{FEED}}/${{ secrets.azure-feed }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{SCOPE}}/${{ inputs.scope }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{USER}}/${{ inputs.organization }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{PASSWORD}}/${{ secrets.azure-api-key }}/g" ./workflow/repository/.npmrc
-          sed -i "s/{{EMAIL}}/a@a.a/g" ./workflow/repository/.npmrc
+          sed -i "s/{{PACKAGE_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" package.json
+          sed -i "s/{{FEED}}/${{ secrets.azure-feed }}/g" .npmrc
+          sed -i "s/{{SCOPE}}/${{ inputs.scope }}/g" .npmrc
+          sed -i "s/{{USER}}/${{ inputs.organization }}/g" .npmrc
+          sed -i "s/{{PASSWORD}}/${{ secrets.azure-api-key }}/g" .npmrc
+          sed -i "s/{{EMAIL}}/a@a.a/g" .npmrc
 
           cp ./workflows/repository/.npmrc ~/.npmrc
           npm install
