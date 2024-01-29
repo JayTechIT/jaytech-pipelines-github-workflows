@@ -60,21 +60,15 @@ jobs:
           registry-url: ${{secrets.azure-feed}}
       - id: semver
         uses: ./workflow/actions/gitversion-semver
-      - name: Encode Azure API Key
-        run: |
-          KEY=${{ secrets.azure-api-key }}
-          ENCODED_KEY=$(echo -n "$KEY" | base64)
-          echo "::set-output name=encoded_key::$ENCODED_KEY"
-        id: encode_key
       - name: Replace package version
         run: |
           sed -i "s#{{PACKAGE_VERSION}}#${{ steps.semver.outputs.semantic-version }}#g" ./workflow/repository/package.json
           sed -i "s#{{ORGANIZATION_NAME}}#${{ inputs.organization }}#g" ./workflow/repository/.npmrc
           sed -i "s#{{FEED_NAME}}#${{ inputs.registry }}#g" ./workflow/repository/.npmrc
-          sed -i "s#{{TOKEN}}#${{ steps.encode_key.outputs.encoded_key }}#g" ./workflow/repository/.npmrc
+          sed -i "s#{{TOKEN}}#${{ secrets.azure-api-key }}#g" ./workflow/repository/.npmrc
           cat ./workflow/repository/.npmrc
       - name: Publish to Azure Artifacts
         working-directory: ./workflow/repository/
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ steps.encode_key.outputs.encoded_key }}
+          NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
