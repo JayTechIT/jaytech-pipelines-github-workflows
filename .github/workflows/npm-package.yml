@@ -63,13 +63,10 @@ jobs:
       - name: Replace package version
         run: |
           sed -i "s#{{PACKAGE_VERSION}}#${{ steps.semver.outputs.semantic-version }}#g" ./workflow/repository/package.json
-          sed -i "#/{{FEED}}#${{ secrets.azure-feed }}#g" ./workflow/repository/.npmrc
-          sed -i "#/{{SCOPE}}#${{ inputs.scope }}#g" ./workflow/repository/.npmrc
-          sed -i "#/{{USER}}#${{ inputs.organization }}#g" ./workflow/repository/.npmrc
-          sed -i "#/{{PASSWORD}}#${{ secrets.azure-api-key }}#g" ./workflow/repository/.npmrc
-          sed -i "#/{{EMAIL}}#a@a.a#g" ./workflow/repository/.npmrc
-      - name: NPM publish
-        working-directory: ./workflow/repository
-        run: |
-          cp .npmrc ~/.npmrc
-          npm publish
+          sed -i "#/{{FEED}}#${{ secrets.azure-feed }}#g" ./workflow/repository/package.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Publish to Azure Artifacts
+        run: npm ci && npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
