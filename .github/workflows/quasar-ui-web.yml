@@ -10,11 +10,6 @@ on:
         description: The keyword used to define your environment repository
         required: false
         default: environment
-      build-web:
-        type: boolean
-        description: Run Quasar build for web?
-        required: false
-        default: false
       replacements-in:
         type: string
         description: Replacement placeholders separated by a semicolon (;)
@@ -69,39 +64,12 @@ jobs:
         with:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{secrets.replacements-out}}
-      - name: Upload prepared repository
-        uses: actions/upload-artifact@v3
-        with:
-          name: workflow
-          path: workflow
-          retention-days: 2
-  build-web:
-    if: ${{inputs.build-web}}
-    needs: preparations
-    name: Build Quasar Web
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow
       - name: Quasar Build Web
         uses: ./workflow/actions/quasar-build-web
         with:
           folder: ${{inputs.source-folder}}
           scope: ${{inputs.scope}}
           scope-key: ${{inputs.scope-key}}
-  continuous-delivery:
-    if: ${{ always() }}
-    needs: ["build-web"]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download prepared repository
-        uses: actions/download-artifact@v3
-        with:
-          name: workflow
-          path: workflow
       - name: Download web contents
         uses: actions/download-artifact@v1
         with:
