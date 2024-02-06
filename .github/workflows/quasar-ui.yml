@@ -30,12 +30,20 @@ on:
         required: false
         type: string
         default: "false"
+      scope:
+        description: Sync the new version with a -environment repository
+        required: false
+        type: string
+        default: ""
     secrets:
       pat-github:
         description: GitHub PAT
         required: true
       replacements-out:
         description: Replacement values separated by a semicolon (;)
+        required: false
+      scope-key:
+        description: Scope auth key
         required: false
 
 jobs:
@@ -79,6 +87,12 @@ jobs:
         with:
           name: workflow
           path: workflow
+      - if: ${{ inputs.scope != '' }}
+        name: Private scope settings
+        run: |
+          cp ./workflow/repository/.npmrc ~/.npmrc
+          npm config set @${{inputs.scope}}:registry ${{secrets.azure-feed}}
+          npm install --ignore-scripts
       - name: Quasar Build Web
         uses: ./workflow/actions/quasar-build-web
         with:
