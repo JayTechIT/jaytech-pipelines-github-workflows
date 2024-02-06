@@ -41,8 +41,8 @@ on:
         description: Scope auth key
         required: false
 jobs:
-  preparations:
-    name: Preparations
+  quasar-ui-web:
+    name: Quasar UI Web
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
