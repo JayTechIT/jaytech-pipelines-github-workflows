@@ -10,6 +10,10 @@ on:
         description: Specify which .NET version to use
         required: false
         default: "7.x"
+      spectral-validation:
+        type: boolean
+        description: Validate the contract against JayTech's spectral rules?
+        default: true
     secrets:
       pat-github:
         description: GitHub PAT
@@ -49,7 +53,8 @@ jobs:
         uses: ./workflow/actions/gitversion-semver
       - name: Set contract version
         run: sed -i "s/{{OAS_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/src/oas.yaml
-      - name: Validate spectral
+      - if: ${{ inputs.spectral-validation == true }}
+        name: Validate spectral
         run: |
           npm install -g @stoplight/spectral
           spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml          
