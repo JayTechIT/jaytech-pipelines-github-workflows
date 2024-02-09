@@ -49,6 +49,10 @@ jobs:
         uses: ./workflow/actions/gitversion-semver
       - name: Set contract version
         run: sed -i "s/{{OAS_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/src/oas.yaml
+      - name: Validate spectral
+        run: |
+          npm install -g @stoplight/spectral
+          spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml          
       - name: Checkout client generator
         uses: actions/checkout@v3
         with:
