@@ -1,0 +1,61 @@
+on:
+  workflow_call:
+    inputs:
+      app-id:
+        type: string
+        description: Application ID (for Play Store)
+        required: false
+        default: ""
+      replacements-in:
+        type: string
+        description: Replacement placeholders separated by a semicolon (;)
+        required: false
+        default: ""
+      source-folder:
+        type: string
+        description: Root folder of the source code
+        required: false
+        default: "./workflow/repository"
+    secrets:
+      pat-github:
+        description: GitHub PAT
+        required: true
+      play-store-json:
+        description: Google Play Store JSON
+        required: true
+      replacements-out:
+        description: Replacement values separated by a semicolon (;)
+        required: false
+
+jobs:
+  quasar-ui-android:
+    name: Quasar UI Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{inputs.repository}}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechNL/jaytech-tools-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
+      - name: Replace placeholders
+        uses: ./workflow/actions/replace-placeholders
+        with:
+          replacements-in: ${{inputs.replacements-in}}
+          replacements-out: ${{secrets.replacements-out}}
+      - name: Quasar Build Android
+        uses: ./workflow/actions/quasar-build-android
+        with:
+          folder: ${{inputs.source-folder}}
+      - name: Quasar Publish Android
+        uses: ./workflow/actions/quasar-publish-android
+        with:
+          app-id: ${{inputs.app-id}}
+          play-store-json: ${{secrets.play-store-json}}
