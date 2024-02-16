@@ -80,7 +80,7 @@ jobs:
       - name: Replace {{APP_VERSION}}
         uses: ./workflow/actions/replace-placeholders
         with:
-          replacements-in: APP_VERSION
+          replacements-in: "{{APP_VERSION}}"
           replacements-out: ${{ steps.semver.outputs.semantic-version }}
       - name: Upload prepared repository
         uses: actions/upload-artifact@v3
