@@ -99,6 +99,19 @@ jobs:
           asset_path: ./output/web/quasar-web.tar.gz
           asset_name: quasar-web.tar.gz
           asset_content_type: application/gzip
+      - name: Quasar Build Android
+        uses: ./workflow/actions/quasar-build-android
+        with:
+          folder: ${{inputs.source-folder}}
+      - name: Upload quasar-android to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.pat-github }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output/web/quasar-android.tar.gz
+          asset_name: quasar-android.tar.gz
+          asset_content_type: application/gzip
       - if: ${{ inputs.sync-environment == 'true' }}
         name: Checkout GitOps
         uses: actions/checkout@v3
