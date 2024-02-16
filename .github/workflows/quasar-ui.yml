@@ -118,6 +118,13 @@ jobs:
     name: Sync Environment Repository
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechIT/jaytech-pipelines-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
       - id: semver
         uses: ./workflow/actions/gitversion-semver
       - name: release
