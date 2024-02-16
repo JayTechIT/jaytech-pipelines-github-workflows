@@ -20,9 +20,6 @@ on:
       pat-github:
         description: GitHub PAT
         required: true
-      play-store-json:
-        description: Google Play Store JSON
-        required: true
       replacements-out:
         description: Replacement values separated by a semicolon (;)
         required: false
@@ -54,8 +51,3 @@ jobs:
         uses: ./workflow/actions/quasar-build-android
         with:
           folder: ${{inputs.source-folder}}
-      - name: Quasar Publish Android
-        uses: ./workflow/actions/quasar-publish-android
-        with:
-          app-id: ${{inputs.app-id}}
-          play-store-json: ${{secrets.play-store-json}}
