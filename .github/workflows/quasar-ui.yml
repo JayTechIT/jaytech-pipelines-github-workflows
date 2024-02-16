@@ -116,6 +116,7 @@ jobs:
       - name: Quasar Build Android
         uses: ./workflow/actions/quasar-build-android
         with:
+          app-name: ${{inputs.application-name}}
           folder: ${{inputs.source-folder}}
 
   sync-environment-repository:
