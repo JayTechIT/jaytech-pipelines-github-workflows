@@ -41,6 +41,9 @@ on:
         required: false
         default: "./workflow/repository"
     secrets:
+      key-store-password:
+        description: The keystore password
+        required: true
       pat-github:
         description: GitHub PAT
         required: true
@@ -118,6 +121,7 @@ jobs:
         with:
           app-name: ${{inputs.application-name}}
           folder: ${{inputs.source-folder}}
+          key-store-password: ${{secrets.key-store-password}}
 
   sync-environment-repository:
     needs: [build-android, build-web]
