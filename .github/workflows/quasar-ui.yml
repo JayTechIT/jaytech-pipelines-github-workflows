@@ -25,6 +25,11 @@ on:
         description: Build Quasar in web mode?
         required: false
         default: true
+      environment-name:
+        type: string
+        description: The keyword used to define your environment repository
+        required: false
+        default: environment
       replacements-in:
         type: string
         description: Replacement placeholders separated by a semicolon (;)
