@@ -118,6 +118,11 @@ jobs:
     name: Sync Environment Repository
     runs-on: ubuntu-latest
     steps:
+      - name: Download prepared repository
+        uses: actions/download-artifact@v3
+        with:
+          name: workflow
+          path: workflow
       - name: Checkout JayTech actions
         uses: actions/checkout@v3
         with:
