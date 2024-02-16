@@ -103,6 +103,14 @@ jobs:
         uses: ./workflow/actions/quasar-build-android
         with:
           folder: ${{inputs.source-folder}}
+      - name: Download web contents
+        uses: actions/download-artifact@v1
+        with:
+          name: quasar-build-android
+          path: ./output/android
+      - name: TAR
+        run: |
+          tar -czvf ./output/android/quasar-android.tar.gz ./output/android/*
       - name: Upload quasar-android to release
         uses: actions/upload-release-asset@v1
         env:
