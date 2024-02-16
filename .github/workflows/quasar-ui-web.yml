@@ -117,7 +117,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./output/web/quasar-android.tar.gz
+          asset_path: ./output/android/quasar-android.tar.gz
           asset_name: quasar-android.tar.gz
           asset_content_type: application/gzip
       - if: ${{ inputs.sync-environment == 'true' }}
