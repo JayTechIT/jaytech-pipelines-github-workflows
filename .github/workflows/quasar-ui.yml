@@ -130,16 +130,6 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-      - name: Create GitHub release
-        uses: actions/create-release@v1
-        id: create_release
-        with:
-          draft: false
-          prerelease: false
-          release_name: ${{ steps.semver.outputs.semantic-version }}
-          tag_name: ${{ steps.semver.outputs.semantic-version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.pat-github }}
       - if: ${{inputs.build-web}}
         name: Download WEB package
         uses: actions/download-artifact@v1
