@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      application-name: 
+        type: string
+        description: The application name (repository name without api/contract/ui)
+        required: true
       build-android:
         type: boolean
         description: Build Quasar in android mode?
