@@ -77,7 +77,8 @@ jobs:
           replacements-out: ${{secrets.replacements-out}}
       - id: semver
         uses: ./workflow/actions/gitversion-semver
-      - name: Replace {{APP_VERSION}}
+      - if: ${{inputs.build-android}}
+        name: Replace {{APP_VERSION}}
         uses: ./workflow/actions/replace-placeholders
         with:
           replacements-in: "{{APP_VERSION}}"
