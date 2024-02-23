@@ -106,18 +106,19 @@ jobs:
         with:
           folder: ${{inputs.source-folder}}
 
-  build-android:
-    if: ${{inputs.build-android}}
+  build-android:    
     needs: preparations
     name: Build Quasar Android
     runs-on: ubuntu-latest
     steps:
-      - name: Download prepared repository
+      - if: ${{inputs.build-android}}
+        name: Download prepared repository
         uses: actions/download-artifact@v3
         with:
           name: workflow
           path: workflow
-      - name: Quasar Build Android
+      - if: ${{inputs.build-android}}
+        name: Quasar Build Android
         uses: ./workflow/actions/quasar-build-android
         with:
           app-name: ${{inputs.application-name}}
