@@ -79,6 +79,10 @@ jobs:
         with:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{secrets.replacements-out}}  
+      - name: Set Project Version in All .csproj Files
+        run: |
+          find . -type f -name '*.csproj' -exec sed -i 's|<Version>.*</Version>|<Version>${{ inputs.software-version }}</Version>|' {} \;
+        shell: bash
       - name: .NET Test
         uses: ./workflow/actions/dotnet-test
         with:
