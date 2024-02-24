@@ -99,7 +99,7 @@ jobs:
           aws-region: ${{secrets.aws-region}}
       - name: Tag & Release
         uses: actions/create-release@v1        
-        if: contains('refs/heads/master', github.ref)
+        if: ${{ inputs.sync-environment == 'true' }}
         with:
           draft: false
           prerelease: false
