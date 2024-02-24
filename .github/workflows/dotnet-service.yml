@@ -81,10 +81,10 @@ jobs:
           replacements-out: ${{secrets.replacements-out}}  
       - id: semver
         uses: ./workflow/actions/gitversion-semver      
-      - name: Set Project Version in All .csproj Files
-        run: |
-          find . -type f -name '*.csproj' -exec sed -i 's|<Version>.*</Version>|<Version>${{ steps.semver.outputs.semantic-version }}</Version>|' {} \;
-        shell: bash
+      # - name: Set Project Version in All .csproj Files
+      #   run: |
+      #     find . -type f -name '*.csproj' -exec sed -i 's|<Version>.*</Version>|<Version>${{ steps.semver.outputs.semantic-version }}</Version>|' {} \;
+      #   shell: bash
       - name: .NET Test
         uses: ./workflow/actions/dotnet-test
         with:
