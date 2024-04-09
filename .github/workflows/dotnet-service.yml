@@ -131,7 +131,7 @@ jobs:
       - if: ${{ inputs.sync-environment == 'true' }}
         name: Push to GitOps
         id: push_directory
-        uses: cpina/github-action-push-to-another-repository@v1.4.2
+        uses: cpina/github-action-push-to-another-repository@v1.7.2
         env:
           API_TOKEN_GITHUB: ${{ secrets.pat-github }}
         with:
