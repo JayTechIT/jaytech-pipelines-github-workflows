@@ -14,7 +14,7 @@ on:
       cloudfront-distribution:
         description: The ID of the AWS Cloudfront distribution
         type: string
-        required: true
+        required: true      
       lambda-function:
         description: The name of the lambda function
         type: string
@@ -78,4 +78,38 @@ jobs:
     if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Sync UI job running because version-ui changed."
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: ./workflow/repository
+      - name: Fetch UI version
+        id: ui-version
+        uses: KJ002/read-yaml@main
+        with:
+          file: "./workflow/repository/version-ui.yml"
+          key-path: '["version"]'
+      - uses: robinraju/release-downloader@v1.8
+        with:
+          repository: ${{inputs.ui-repository}}
+          tag: ${{steps.ui-version.outputs.data}}
+          fileName: "quasar-web.tar.gz"
+          extract: true
+          token: ${{secrets.pat-github}}
+      - name: Push to Amazon S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ inputs.s3-bucket }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+          AWS_REGION: ${{ secrets.aws-region }}
+          SOURCE_DIR: './output/web'
+      - name: Invalidate CloudFront
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: ${{ inputs.cloudfront-distribution }}
+          PATHS: "/*"
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+          AWS_REGION: ${{ secrets.aws-region }}
