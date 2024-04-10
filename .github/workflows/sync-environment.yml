@@ -72,8 +72,41 @@ jobs:
     if: ${{ needs.preparations.outputs.api_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Sync API job running because version-api changed."
-
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          path: ./workflow/repository
+      - name: Fetch API version
+        id: api-version
+        uses: KJ002/read-yaml@main
+        with:
+          file: "./workflow/repository/version-api.yml"
+          key-path: '["version"]'
+      - name: configure credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.aws-access-key-id }}
+          aws-secret-access-key: ${{ secrets.aws-secret-access-key }}
+          aws-region: ${{ secrets.aws-region }}
+      - name: Update Lambda environment variables
+        run: |
+          # Convert each JSON key-value pair into an environment variable string, preserving quotes around string values
+          env_vars=$(jq -r 'to_entries | map("\(.key)=\(.value|tojson)") | .[]' ./workflow/repository/${{github.ref_name}}.json)
+          # Convert newline-separated key-value pairs to a comma-separated list
+          env_vars_formatted=$(echo "$env_vars" | paste -sd, -)
+          # Update the Lambda function configuration with the new environment variables
+          aws lambda update-function-configuration --function-name ${{inputs.lambda-function}} --environment "Variables={${env_vars_formatted}}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+          AWS_REGION: ${{ secrets.aws-region }}
+      - name: Wait for configuration update to complete
+        run: sleep 40
+      - uses: int128/deploy-lambda-action@v1
+        with:
+          function-name: ${{inputs.lambda-function}}
+          image-uri: ${{inputs.api-image-uri}}:${{steps.api-version.outputs.data}}
+      
   sync-ui:
     needs: preparations
     if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
