@@ -1,4 +1,4 @@
-name: Example Workflow
+name: Sync Environment Workflow
 
 on:
   workflow_call:
@@ -48,16 +48,22 @@ jobs:
       api_changed: ${{ steps.set_vars.outputs.api_changed }}
       ui_changed: ${{ steps.set_vars.outputs.ui_changed }}
     steps:
-    - uses: actions/checkout@v2
-    - id: set_vars
-      run: |
-        echo "Checking for API/UI changes..."
-        API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./path/to/version-api || echo "true")
-        UI_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./path/to/version-ui || echo "true")
-        echo "API_CHANGED=$API_CHANGED" >> $GITHUB_ENV
-        echo "UI_CHANGED=$UI_CHANGED" >> $GITHUB_ENV
-        echo "::set-output name=api_changed::$API_CHANGED"
-        echo "::set-output name=ui_changed::$UI_CHANGED"
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repository }}
+          token: ${{ secrets.pat-github }}
+          path: workflow/repository
+          fetch-depth: 0
+      - id: Set api/ui change variables
+        run: |
+          echo "Checking for API/UI changes..."
+          API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./workflow/repository/version-api.yml || echo "true")
+          UI_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./workflow/repository/version-ui.yml || echo "true")
+          echo "API_CHANGED=$API_CHANGED" >> $GITHUB_ENV
+          echo "UI_CHANGED=$UI_CHANGED" >> $GITHUB_ENV
+          echo "::set-output name=api_changed::$API_CHANGED"
+          echo "::set-output name=ui_changed::$UI_CHANGED"
   
   sync-api:
     needs: preparations
