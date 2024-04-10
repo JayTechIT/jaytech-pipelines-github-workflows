@@ -55,7 +55,7 @@ jobs:
           token: ${{ secrets.pat-github }}
           path: workflow/repository
           fetch-depth: 0
-      - id: Set api and ui sync variables
+      - id: set_vars
         run: |
           echo "Checking for API/UI changes..."
           API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./workflow/repository/version-api.yml || echo "true")
