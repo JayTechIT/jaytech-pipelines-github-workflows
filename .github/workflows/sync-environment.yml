@@ -48,6 +48,7 @@ jobs:
       api_changed: ${{ steps.set_vars.outputs.api_changed }}
       ui_changed: ${{ steps.set_vars.outputs.ui_changed }}
     steps:
+      - run: echo "The branch name is ${{ github.event.inputs.branch-name }}"
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
