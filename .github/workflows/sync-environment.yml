@@ -1,0 +1,74 @@
+name: Example Workflow
+
+on:
+  workflow_call:
+    inputs:
+      app-id:
+        description: The unique app identifier in case of a mobile app.
+        type: string
+        required: true
+      api-image-uri:
+        description: The AWS ECR link to the Docker image repository.
+        type: string
+        required: true
+      cloudfront-distribution:
+        description: The ID of the AWS Cloudfront distribution
+        type: string
+        required: true
+      lambda-function:
+        description: The name of the lambda function
+        type: string
+        required: true
+      s3-bucket:
+        description: The name of the AWS S3 bucket
+        type: string
+        required: true
+      ui-repository:
+        description: The '[org]/[repository]' location of the UI repository
+        type: string
+        required: true
+    secrets:
+      aws-region:
+        description: The region in AWS to push to
+        required: true
+      aws-access-key-id:
+        description: The AWS Access Key ID
+        required: true
+      aws-secret-access-key:
+        description: The AWS Secret Access Key
+        required: true
+      pat-github:
+        description: GitHub PAT
+        required: true
+
+jobs:
+  preparations:
+    runs-on: ubuntu-latest
+    outputs:
+      api_changed: ${{ steps.set_vars.outputs.api_changed }}
+      ui_changed: ${{ steps.set_vars.outputs.ui_changed }}
+    steps:
+    - uses: actions/checkout@v2
+    - id: set_vars
+      run: |
+        echo "Checking for API/UI changes..."
+        API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./path/to/version-api || echo "true")
+        UI_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./path/to/version-ui || echo "true")
+        echo "API_CHANGED=$API_CHANGED" >> $GITHUB_ENV
+        echo "UI_CHANGED=$UI_CHANGED" >> $GITHUB_ENV
+        echo "::set-output name=api_changed::$API_CHANGED"
+        echo "::set-output name=ui_changed::$UI_CHANGED"
+  
+  sync-api:
+    needs: preparations
+    if: ${{ needs.preparations.outputs.api_changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Sync API job running because version-api changed."
+
+  sync-ui:
+    needs: preparations
+    if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Sync UI job running because version-ui changed."
