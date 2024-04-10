@@ -56,10 +56,11 @@ jobs:
           path: workflow/repository
           fetch-depth: 0
       - id: set_vars
+        working-directory: workflow/repository
         run: |
           echo "Checking for API/UI changes..."
-          API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./workflow/repository/version-api.yml || echo "true")
-          UI_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./workflow/repository/version-ui.yml || echo "true")
+          API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./version-api.yml || echo "true")
+          UI_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./version-ui.yml || echo "true")
           echo "API_CHANGED=$API_CHANGED" >> $GITHUB_ENV
           echo "UI_CHANGED=$UI_CHANGED" >> $GITHUB_ENV
           echo "::set-output name=api_changed::$API_CHANGED"
