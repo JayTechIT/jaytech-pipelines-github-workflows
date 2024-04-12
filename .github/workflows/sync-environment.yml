@@ -60,7 +60,7 @@ jobs:
         working-directory: workflow/repository
         run: |
           echo "Checking for API/UI changes..."
-          API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./version-api.yml || echo "true")
+          API_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./version-api.yml ./development.json ./production.json || echo "true")
           UI_CHANGED=$(git diff HEAD^ HEAD --quiet -- ./version-ui.yml || echo "true")
           echo "API_CHANGED=$API_CHANGED" >> $GITHUB_ENV
           echo "UI_CHANGED=$UI_CHANGED" >> $GITHUB_ENV
