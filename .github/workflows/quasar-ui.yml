@@ -224,7 +224,6 @@ jobs:
         if: github.ref == 'refs/heads/master'
         uses: ./workflow/actions/github-clean-prerelease-versions
         with:
-          owner: ${{ github.repository_owner }}
           repo: ${{ github.repository }}
           token: ${{ secrets.pat-github }}
           specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
