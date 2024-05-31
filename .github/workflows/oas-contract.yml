@@ -121,8 +121,7 @@ jobs:
           }
 
           # GitHub API headers
-          headers="Authorization: token $token
-          Accept: application/vnd.github.v3+json"
+          headers="Authorization: token $token\nAccept: application/vnd.github.v3+json"
 
           # Base URI for GitHub API
           baseUri="https://api.github.com/repos/$owner/$repo_name"
@@ -135,11 +134,11 @@ jobs:
           # Ensure tags is valid JSON
           if ! echo "$tags" | jq empty; then
               echo "Failed to fetch tags or invalid JSON received."
+              echo "$tags"
               exit 1
           fi
 
           echo "Fetched tags: $tags"
-
           echo "$tags" | jq -c '.[]' | while read -r tag; do
           tagName=$(echo "$tag" | jq -r '.name')
           echo "Processing tag: $tagName"
@@ -148,23 +147,40 @@ jobs:
               # Get the release by tag name
               releaseUri="$baseUri/releases/tags/$tagName"
               release=$(curl -s -H "$headers" "$releaseUri")
+
+              if ! echo "$release" | jq empty; then
+                  echo "Failed to fetch release information for tag $tagName."
+                  echo "$release"
+                  continue
+              fi
+
               releaseId=$(echo "$release" | jq -r '.id')
 
               if [ "$releaseId" != "null" ]; then
                   echo "Deleting release with ID: $releaseId"
                   # Delete the release
-                  curl -s -X DELETE -H "$headers" "$baseUri/releases/$releaseId"
-                  echo "Deleted release $(echo "$release" | jq -r '.name')"
+                  deleteReleaseResponse=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE -H "$headers" "$baseUri/releases/$releaseId")
+                  if [ "$deleteReleaseResponse" -eq 204 ]; then
+                      echo "Deleted release $(echo "$release" | jq -r '.name')"
+                  else
+                      echo "Failed to delete release $releaseId. HTTP status code: $deleteReleaseResponse"
+                      continue
+                  fi
               else
                   echo "No release found for tag $tagName or it might already be deleted."
               fi
 
               echo "Deleting tag reference: $tagName"
               # Delete the tag reference
-              curl -s -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName"
-              echo "Deleted tag $tagName"
+              deleteTagResponse=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName")
+              if [ "$deleteTagResponse" -eq 204 ]; then
+                  echo "Deleted tag $tagName"
+              else
+                  echo "Failed to delete tag $tagName. HTTP status code: $deleteTagResponse"
+              fi
           else
               echo "Tag $tagName is not a pre-release of $specifiedVersion"
           fi
           done
+
 
