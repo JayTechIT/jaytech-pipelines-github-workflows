@@ -102,6 +102,7 @@ jobs:
           # User parameters
           owner="${{ github.repository_owner }}"
           repo="${{ github.repository }}"
+          repo_name=$(echo $repo | cut -d'/' -f2)
           token="${{ secrets.pat-github }}"
           specifiedVersion="${{ steps.semver.outputs.semantic-version }}"
 
@@ -119,10 +120,16 @@ jobs:
           headers="Authorization: token $token\nAccept: application/vnd.github.v3+json"
 
           # Base URI for GitHub API
-          baseUri="https://api.github.com/repos/$owner/$repo"
+          baseUri="https://api.github.com/repos/$owner/$repo_name"
 
           # Get all tags
           tags=$(curl -s -H "$headers" "$baseUri/tags")
+
+          # Ensure tags is valid JSON
+          if ! echo "$tags" | jq empty; then
+              echo "Failed to fetch tags or invalid JSON received."
+              exit 1
+          fi
 
           echo "$tags" | jq -c '.[]' | while read -r tag; do
               tagName=$(echo "$tag" | jq -r '.name')
