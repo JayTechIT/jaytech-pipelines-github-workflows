@@ -110,27 +110,13 @@ jobs:
           echo "Repository Name: $repo_name"
           echo "Specified Version: $specifiedVersion"
 
-          # Function to determine if a tag is a pre-release version of the specified base version
-          is_pre_release_version() {
-              tag=$1
-              baseVersion=$2
+          # Authenticate with GitHub CLI
+          echo $token | gh auth login --with-token
 
-              # Normalize the tag to remove a leading 'v' and check if it starts with the base version followed by a hyphen
-              normalizedTag=$(echo "$tag" | sed 's/^v//')
-              [[ $normalizedTag =~ ^$baseVersion- ]]
-          }
-
-          # GitHub API headers
-          headers="Authorization: token $token
-          Accept: application/vnd.github.v3+json"
-
-          # Base URI for GitHub API
-          baseUri="https://api.github.com/repos/$owner/$repo_name"
-
-          echo "Fetching tags from $baseUri/tags"
+          echo "Fetching tags from $owner/$repo_name"
 
           # Get all tags
-          tags=$(curl -s -H "$headers" "$baseUri/tags")
+          tags=$(gh api -H "Accept: application/vnd.github.v3+json" repos/$owner/$repo_name/tags)
 
           # Ensure tags is valid JSON
           if ! echo "$tags" | jq empty; then
@@ -141,47 +127,36 @@ jobs:
 
           echo "Fetched tags: $tags"
           echo "$tags" | jq -c '.[]' | while read -r tag; do
-          tagName=$(echo "$tag" | jq -r '.name')
-          echo "Processing tag: $tagName"
-          if is_pre_release_version "$tagName" "$specifiedVersion"; then
-              echo "Tag $tagName is a pre-release of $specifiedVersion"
-              # Get the release by tag name
-              releaseUri="$baseUri/releases/tags/$tagName"
-              release=$(curl -s -H "$headers" "$releaseUri")
-
-              if ! echo "$release" | jq empty; then
-                  echo "Failed to fetch release information for tag $tagName."
-                  echo "$release"
-                  continue
+              tagName=$(echo "$tag" | jq -r '.name')
+              echo "Processing tag: $tagName"
+              if [[ $tagName =~ ^v ]]; then
+                  normalizedTag=$(echo "$tagName" | sed 's/^v//')
+              else
+                  normalizedTag=$tagName
               fi
+              if [[ $normalizedTag =~ ^$specifiedVersion- ]]; then
+                  echo "Tag $tagName is a pre-release of $specifiedVersion"
+                  # Get the release by tag name
+                  release=$(gh api -H "Accept: application/vnd.github.v3+json" repos/$owner/$repo_name/releases/tags/$tagName)
 
-              releaseId=$(echo "$release" | jq -r '.id')
+                  releaseId=$(echo "$release" | jq -r '.id')
 
-              if [ "$releaseId" != "null" ]; then
-                  echo "Deleting release with ID: $releaseId"
-                  # Delete the release
-                  deleteReleaseResponse=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE -H "$headers" "$baseUri/releases/$releaseId")
-                  if [ "$deleteReleaseResponse" -eq 204 ]; then
+                  if [ "$releaseId" != "null" ]; then
+                      echo "Deleting release with ID: $releaseId"
+                      # Delete the release
+                      gh api -X DELETE repos/$owner/$repo_name/releases/$releaseId
                       echo "Deleted release $(echo "$release" | jq -r '.name')"
                   else
-                      echo "Failed to delete release $releaseId. HTTP status code: $deleteReleaseResponse"
-                      continue
+                      echo "No release found for tag $tagName or it might already be deleted."
                   fi
-              else
-                  echo "No release found for tag $tagName or it might already be deleted."
-              fi
 
-              echo "Deleting tag reference: $tagName"
-              # Delete the tag reference
-              deleteTagResponse=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName")
-              if [ "$deleteTagResponse" -eq 204 ]; then
+                  echo "Deleting tag reference: $tagName"
+                  # Delete the tag reference
+                  gh api -X DELETE repos/$owner/$repo_name/git/refs/tags/$tagName
                   echo "Deleted tag $tagName"
               else
-                  echo "Failed to delete tag $tagName. HTTP status code: $deleteTagResponse"
+                  echo "Tag $tagName is not a pre-release of $specifiedVersion"
               fi
-          else
-              echo "Tag $tagName is not a pre-release of $specifiedVersion"
-          fi
           done
 
 
