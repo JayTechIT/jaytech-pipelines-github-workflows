@@ -126,6 +126,12 @@ jobs:
           # Get all tags
           tags=$(curl -s -H "$headers" "$baseUri/tags")
 
+          echo $headers
+
+          echo $tags
+
+          echo $repo_name
+
           # Ensure tags is valid JSON
           if ! echo "$tags" | jq empty; then
               echo "Failed to fetch tags or invalid JSON received."
@@ -133,24 +139,25 @@ jobs:
           fi
 
           echo "$tags" | jq -c '.[]' | while read -r tag; do
-              tagName=$(echo "$tag" | jq -r '.name')
-              if is_pre_release_version "$tagName" "$specifiedVersion"; then
-                  # Get the release by tag name
-                  releaseUri="$baseUri/releases/tags/$tagName"
-                  release=$(curl -s -H "$headers" "$releaseUri")
-                  releaseId=$(echo "$release" | jq -r '.id')
+          tagName=$(echo "$tag" | jq -r '.name')
+          if is_pre_release_version "$tagName" "$specifiedVersion"; then
+              # Get the release by tag name
+              releaseUri="$baseUri/releases/tags/$tagName"
+              release=$(curl -s -H "$headers" "$releaseUri")
+              releaseId=$(echo "$release" | jq -r '.id')
 
-                  if [ "$releaseId" != "null" ]; then
-                      # Delete the release
-                      curl -s -X DELETE -H "$headers" "$baseUri/releases/$releaseId"
-                      echo "Deleted release $(echo "$release" | jq -r '.name')"
-                  else
-                      echo "No release found for tag $tagName or it might already be deleted."
-                  fi
-
-                  # Delete the tag reference
-                  curl -s -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName"
-                  echo "Deleted tag $tagName"
+              if [ "$releaseId" != "null" ]; then
+                  # Delete the release
+                  curl -s -X DELETE -H "$headers" "$baseUri/releases/$releaseId"
+                  echo "Deleted release $(echo "$release" | jq -r '.name')"
+              else
+                  echo "No release found for tag $tagName or it might already be deleted."
               fi
+
+              # Delete the tag reference
+              curl -s -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName"
+              echo "Deleted tag $tagName"
+          fi
+
           done
 
