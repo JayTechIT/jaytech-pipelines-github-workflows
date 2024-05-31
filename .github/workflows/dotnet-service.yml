@@ -140,3 +140,11 @@ jobs:
           destination-repository-name: ${{ inputs.application-name }}-${{inputs.environment-name}}
           commit-message: '[API-v${{ steps.semver.outputs.semantic-version }}] - ${{ github.event.head_commit.message }}'
           target-branch: development
+      - name: Clean Prerelease Versions
+        if: github.ref == 'refs/heads/master'
+        uses: ./workflow/actions/github-clean-prerelease-versions
+        with:
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.repository }}
+          token: ${{ secrets.pat-github }}
+          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}

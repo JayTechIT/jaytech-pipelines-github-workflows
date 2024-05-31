@@ -74,16 +74,16 @@ jobs:
           cd ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration
           dotnet run --launch-profile Production
           ls -A
-      # - name: nuget-push
-      #   uses: ./workflow/actions/dotnet-publish-nuget
-      #   with:
-      #     software-version: ${{ steps.semver.outputs.semantic-version }}
-      #     project-folder: ./workflow/repository/generated
-      #     azure-api-key: ${{secrets.azure-api-key}}
-      #     azure-source: ${{secrets.azure-source}}
-      #     azure-feed: ${{secrets.azure-feed}}
-      #     add-source: "false"
-      #     dotnet-version: ${{inputs.dotnet-version}}
+      - name: nuget-push
+        uses: ./workflow/actions/dotnet-publish-nuget
+        with:
+          software-version: ${{ steps.semver.outputs.semantic-version }}
+          project-folder: ./workflow/repository/generated
+          azure-api-key: ${{secrets.azure-api-key}}
+          azure-source: ${{secrets.azure-source}}
+          azure-feed: ${{secrets.azure-feed}}
+          add-source: "false"
+          dotnet-version: ${{inputs.dotnet-version}}
       - name: Tag & Release
         uses: actions/create-release@v1                
         with:
@@ -93,70 +93,11 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-      - name: Clean up prerelease versions
+      - name: Clean Prerelease Versions
         if: github.ref == 'refs/heads/master'
-        run: |
-          set -e  # Exit immediately if a command exits with a non-zero status
-
-          # User parameters
-          owner="${{ github.repository_owner }}"
-          repo="${{ github.repository }}"
-          repo_name=$(echo $repo | cut -d'/' -f2)
-          token="${{ secrets.pat-github }}"
-          specifiedVersion="${{ steps.semver.outputs.semantic-version }}"
-
-          echo "Owner: $owner"
-          echo "Repository: $repo"
-          echo "Repository Name: $repo_name"
-          echo "Specified Version: $specifiedVersion"
-
-          # Authenticate with GitHub CLI
-          echo $token | gh auth login --with-token
-
-          echo "Fetching tags from $owner/$repo_name"
-
-          # Get all tags
-          tags=$(gh api -H "Accept: application/vnd.github.v3+json" repos/$owner/$repo_name/tags)
-
-          # Ensure tags is valid JSON
-          if ! echo "$tags" | jq empty; then
-              echo "Failed to fetch tags or invalid JSON received."
-              echo "$tags"
-              exit 1
-          fi
-
-          echo "Fetched tags: $tags"
-          echo "$tags" | jq -c '.[]' | while read -r tag; do
-              tagName=$(echo "$tag" | jq -r '.name')
-              echo "Processing tag: $tagName"
-              if [[ $tagName =~ ^v ]]; then
-                  normalizedTag=$(echo "$tagName" | sed 's/^v//')
-              else
-                  normalizedTag=$tagName
-              fi
-              if [[ $normalizedTag =~ ^$specifiedVersion- ]]; then
-                  echo "Tag $tagName is a pre-release of $specifiedVersion"
-                  # Get the release by tag name
-                  release=$(gh api -H "Accept: application/vnd.github.v3+json" repos/$owner/$repo_name/releases/tags/$tagName)
-
-                  releaseId=$(echo "$release" | jq -r '.id')
-
-                  if [ "$releaseId" != "null" ]; then
-                      echo "Deleting release with ID: $releaseId"
-                      # Delete the release
-                      gh api -X DELETE repos/$owner/$repo_name/releases/$releaseId
-                      echo "Deleted release $(echo "$release" | jq -r '.name')"
-                  else
-                      echo "No release found for tag $tagName or it might already be deleted."
-                  fi
-
-                  echo "Deleting tag reference: $tagName"
-                  # Delete the tag reference
-                  gh api -X DELETE repos/$owner/$repo_name/git/refs/tags/$tagName
-                  echo "Deleted tag $tagName"
-              else
-                  echo "Tag $tagName is not a pre-release of $specifiedVersion"
-              fi
-          done
-
-
+        uses: ./workflow/actions/github-clean-prerelease-versions
+        with:
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.repository }}
+          token: ${{ secrets.pat-github }}
+          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
