@@ -93,18 +93,22 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-      - name: Install jq
-        if: github.ref == 'refs/heads/master'
-        run: sudo apt-get install -y jq
       - name: Clean up prerelease versions
         if: github.ref == 'refs/heads/master'
         run: |
+          set -e  # Exit immediately if a command exits with a non-zero status
+
           # User parameters
           owner="${{ github.repository_owner }}"
           repo="${{ github.repository }}"
           repo_name=$(echo $repo | cut -d'/' -f2)
           token="${{ secrets.pat-github }}"
           specifiedVersion="${{ steps.semver.outputs.semantic-version }}"
+
+          echo "Owner: $owner"
+          echo "Repository: $repo"
+          echo "Repository Name: $repo_name"
+          echo "Specified Version: $specifiedVersion"
 
           # Function to determine if a tag is a pre-release version of the specified base version
           is_pre_release_version() {
@@ -123,14 +127,10 @@ jobs:
           # Base URI for GitHub API
           baseUri="https://api.github.com/repos/$owner/$repo_name"
 
+          echo "Fetching tags from $baseUri/tags"
+
           # Get all tags
           tags=$(curl -s -H "$headers" "$baseUri/tags")
-
-          echo $headers
-
-          echo $tags
-
-          echo $repo_name
 
           # Ensure tags is valid JSON
           if ! echo "$tags" | jq empty; then
@@ -138,15 +138,20 @@ jobs:
               exit 1
           fi
 
+          echo "Fetched tags: $tags"
+
           echo "$tags" | jq -c '.[]' | while read -r tag; do
           tagName=$(echo "$tag" | jq -r '.name')
+          echo "Processing tag: $tagName"
           if is_pre_release_version "$tagName" "$specifiedVersion"; then
+              echo "Tag $tagName is a pre-release of $specifiedVersion"
               # Get the release by tag name
               releaseUri="$baseUri/releases/tags/$tagName"
               release=$(curl -s -H "$headers" "$releaseUri")
               releaseId=$(echo "$release" | jq -r '.id')
 
               if [ "$releaseId" != "null" ]; then
+                  echo "Deleting release with ID: $releaseId"
                   # Delete the release
                   curl -s -X DELETE -H "$headers" "$baseUri/releases/$releaseId"
                   echo "Deleted release $(echo "$release" | jq -r '.name')"
@@ -154,10 +159,12 @@ jobs:
                   echo "No release found for tag $tagName or it might already be deleted."
               fi
 
+              echo "Deleting tag reference: $tagName"
               # Delete the tag reference
               curl -s -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName"
               echo "Deleted tag $tagName"
+          else
+              echo "Tag $tagName is not a pre-release of $specifiedVersion"
           fi
-
           done
 
