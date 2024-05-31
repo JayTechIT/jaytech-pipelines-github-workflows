@@ -74,16 +74,16 @@ jobs:
           cd ./workflow/client-generator/Source/Assemblies/JayTech.Tools.ClientGeneration
           dotnet run --launch-profile Production
           ls -A
-      - name: nuget-push
-        uses: ./workflow/actions/dotnet-publish-nuget
-        with:
-          software-version: ${{ steps.semver.outputs.semantic-version }}
-          project-folder: ./workflow/repository/generated
-          azure-api-key: ${{secrets.azure-api-key}}
-          azure-source: ${{secrets.azure-source}}
-          azure-feed: ${{secrets.azure-feed}}
-          add-source: "false"
-          dotnet-version: ${{inputs.dotnet-version}}
+      # - name: nuget-push
+      #   uses: ./workflow/actions/dotnet-publish-nuget
+      #   with:
+      #     software-version: ${{ steps.semver.outputs.semantic-version }}
+      #     project-folder: ./workflow/repository/generated
+      #     azure-api-key: ${{secrets.azure-api-key}}
+      #     azure-source: ${{secrets.azure-source}}
+      #     azure-feed: ${{secrets.azure-feed}}
+      #     add-source: "false"
+      #     dotnet-version: ${{inputs.dotnet-version}}
       - name: Tag & Release
         uses: actions/create-release@v1                
         with:
@@ -93,3 +93,56 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
+      - name: Install jq
+        if: github.ref == 'refs/heads/master'
+        run: sudo apt-get install -y jq
+      - name: Clean up prerelease versions
+        if: github.ref == 'refs/heads/master'
+        run: |
+          # User parameters
+          owner="${{ github.repository_owner }}"
+          repo="${{ github.repository }}"
+          token="${{ secrets.pat-github }}"
+          specifiedVersion="${{ steps.semver.outputs.semantic-version }}"
+
+          # Function to determine if a tag is a pre-release version of the specified base version
+          is_pre_release_version() {
+              tag=$1
+              baseVersion=$2
+
+              # Normalize the tag to remove a leading 'v' and check if it starts with the base version followed by a hyphen
+              normalizedTag=$(echo "$tag" | sed 's/^v//')
+              [[ $normalizedTag =~ ^$baseVersion- ]]
+          }
+
+          # GitHub API headers
+          headers="Authorization: token $token\nAccept: application/vnd.github.v3+json"
+
+          # Base URI for GitHub API
+          baseUri="https://api.github.com/repos/$owner/$repo"
+
+          # Get all tags
+          tags=$(curl -s -H "$headers" "$baseUri/tags")
+
+          echo "$tags" | jq -c '.[]' | while read -r tag; do
+              tagName=$(echo "$tag" | jq -r '.name')
+              if is_pre_release_version "$tagName" "$specifiedVersion"; then
+                  # Get the release by tag name
+                  releaseUri="$baseUri/releases/tags/$tagName"
+                  release=$(curl -s -H "$headers" "$releaseUri")
+                  releaseId=$(echo "$release" | jq -r '.id')
+
+                  if [ "$releaseId" != "null" ]; then
+                      # Delete the release
+                      curl -s -X DELETE -H "$headers" "$baseUri/releases/$releaseId"
+                      echo "Deleted release $(echo "$release" | jq -r '.name')"
+                  else
+                      echo "No release found for tag $tagName or it might already be deleted."
+                  fi
+
+                  # Delete the tag reference
+                  curl -s -X DELETE -H "$headers" "$baseUri/git/refs/tags/$tagName"
+                  echo "Deleted tag $tagName"
+              fi
+          done
+
