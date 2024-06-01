@@ -77,7 +77,10 @@ jobs:
       - name: Set NPM registry for scope
         run: npm config set @${{inputs.scope}}:registry ${{secrets.azure-feed}}
       - name: Debug .npmrc
-        run: cat ~/.npmrc
+        run: |
+          echo "=== .npmrc ==="
+          cat ~/.npmrc
+          echo "============="
       - run: npm install --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
