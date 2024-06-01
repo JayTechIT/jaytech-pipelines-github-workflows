@@ -74,7 +74,10 @@ jobs:
           cat ./workflow/repository/.npmrc
       - name: Copy .npmrc to home directory
         run: cp ./workflow/repository/.npmrc ~/.npmrc
-      - run: npm config set @${{inputs.scope}}:registry ${{secrets.azure-feed}}
+      - name: Set NPM registry for scope
+        run: npm config set @${{inputs.scope}}:registry ${{secrets.azure-feed}}
+      - name: Debug .npmrc
+        run: cat ~/.npmrc
       - run: npm install --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.azure-api-key }}
@@ -95,4 +98,3 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-
