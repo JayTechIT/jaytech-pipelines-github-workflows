@@ -108,7 +108,7 @@ jobs:
         with:
           folder: ${{inputs.source-folder}}
 
-  build-android:    
+  build-android:
     needs: preparations
     name: Build Quasar Android
     runs-on: ubuntu-latest
@@ -128,7 +128,7 @@ jobs:
           key-store-password: ${{secrets.key-store-password}}
 
   sync-environment-repository:
-    needs: [build-android, build-web]
+    needs: [preparations, build-android, build-web]
     name: Sync Environment Repository
     runs-on: ubuntu-latest
     steps:
