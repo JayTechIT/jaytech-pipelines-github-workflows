@@ -229,54 +229,16 @@ jobs:
           specifiedVersion: ${{ needs.preparations.outputs.semantic-version }}
 
   clean-up:
-    name: Clean Up Old Tags and Releases
     runs-on: ubuntu-latest
-    needs: sync-environment-repository
     steps:
-      - name: Get Tags
-        id: get_tags
-        run: |
-          curl -s -H "Authorization: token ${{ secrets.pat-github }}" \
-            https://api.github.com/repos/${{ github.repository }}/tags \
-            | jq -r '.[] | .name' > tags.txt
-
-      - name: Get Releases
-        id: get_releases
-        run: |
-          curl -s -H "Authorization: token ${{ secrets.pat-github }}" \
-            https://api.github.com/repos/${{ github.repository }}/releases \
-            | jq -r '.[] | .tag_name' > releases.txt
-
-      - name: Keep only the latest 10 tags and releases
-        id: clean_up
-        run: |
-          # Get all tags and releases
-          TAGS=$(cat tags.txt)
-          RELEASES=$(cat releases.txt)
-
-          # Get the 10 most recent tags and releases (that we want to KEEP)
-          KEEP_TAGS=$(echo "$TAGS" | head -n 10)
-          KEEP_RELEASES=$(echo "$RELEASES" | head -n 10)
-
-          echo "Keeping the following tags:"
-          echo "$KEEP_TAGS"
-
-          echo "Keeping the following releases:"
-          echo "$KEEP_RELEASES"
-
-          # Loop through the releases and delete any older ones beyond the 10 most recent
-          for release in $(echo "$RELEASES" | tail -n +11); do
-            echo "Deleting release: $release"
-            RELEASE_ID=$(curl -s -H "Authorization: token ${{ secrets.pat-github }}" \
-              https://api.github.com/repos/${{ github.repository }}/releases/tags/$release \
-              | jq -r '.id')
-            curl -s -X DELETE -H "Authorization: token ${{ secrets.pat-github }}" \
-              https://api.github.com/repos/${{ github.repository }}/releases/$RELEASE_ID
-          done
-
-          # Now delete all tags except the 10 most recent
-          for tag in $(echo "$TAGS" | tail -n +11); do
-            echo "Deleting tag: $tag"
-            curl -s -X DELETE -H "Authorization: token ${{ secrets.pat-github }}" \
-              https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$tag
-          done
+      - name: Checkout JayTech actions
+        uses: actions/checkout@v3
+        with:
+          ref: master
+          repository: JayTechIT/jaytech-pipelines-github-actions
+          token: ${{ secrets.pat-github }}
+          path: workflow/actions
+      - name: Clean up old tags and releases
+        uses: ./workflow/actions/github-clean-tags-releases
+        with:
+          keep: 10
