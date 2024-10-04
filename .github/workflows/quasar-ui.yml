@@ -243,3 +243,4 @@ jobs:
         uses: ./workflow/actions/github-clean-tags-releases
         with:
           keep: 10
+          token: ${{ secrets.pat-github }}
