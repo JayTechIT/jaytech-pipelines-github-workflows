@@ -229,8 +229,9 @@ jobs:
           specifiedVersion: ${{ needs.preparations.outputs.semantic-version }}
 
   clean-up:
-    needs: [sync-environment]
+    needs: [preparations, sync-environment]
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - name: Checkout JayTech actions
         uses: actions/checkout@v3
@@ -244,3 +245,4 @@ jobs:
         with:
           keep: 10
           token: ${{ secrets.pat-github }}
+          semantic-version: ${{ needs.preparations.outputs.semantic-version }}
