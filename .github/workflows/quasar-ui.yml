@@ -280,5 +280,3 @@ jobs:
             curl -s -X DELETE -H "Authorization: token ${{ secrets.pat-github }}" \
               https://api.github.com/repos/${{ github.repository }}/git/refs/tags/$tag
           done
-
-          done
