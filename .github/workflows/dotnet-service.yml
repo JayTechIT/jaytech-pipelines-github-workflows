@@ -106,7 +106,7 @@ jobs:
         if: ${{ inputs.sync-environment == 'true' }}
         with:
           draft: false
-          prerelease: false
+          prerelease: ${{ github.ref != 'refs/heads/master' }}
           release_name: ${{ steps.semver.outputs.semantic-version }}
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:

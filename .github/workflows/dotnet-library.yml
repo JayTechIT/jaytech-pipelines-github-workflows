@@ -107,7 +107,7 @@ jobs:
         if: contains('refs/heads/master', github.ref)
         with:
           draft: false
-          prerelease: false
+          prerelease: ${{ github.ref != 'refs/heads/master' }}
           release_name: ${{ steps.semver.outputs.semantic-version }}
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:

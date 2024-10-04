@@ -149,7 +149,7 @@ jobs:
         id: create_release
         with:
           draft: false
-          prerelease: false
+          prerelease: ${{ github.ref != 'refs/heads/master' }}
           release_name: ${{ needs.preparations.outputs.semantic-version }}
           tag_name: ${{ needs.preparations.outputs.semantic-version }}
         env:
