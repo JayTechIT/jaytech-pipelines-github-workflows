@@ -89,6 +89,7 @@ jobs:
         name: Replace {{VERSION_CODE}}
         uses: ./workflow/actions/replace-placeholders
         with:
+          directory: 'workflow/repository/src-capacitor/android/app/'
           replacements-in: "{{VERSION_CODE}}"
           replacements-out: $((10000 * ${{ steps.semver.outputs.major }} + 100 * ${{ steps.semver.outputs.minor }} + ${{ steps.semver.outputs.patch }}))
       - name: Upload prepared repository
