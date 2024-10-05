@@ -85,6 +85,12 @@ jobs:
         with:
           replacements-in: "{{APP_VERSION}}"
           replacements-out: ${{ steps.semver.outputs.semantic-version }}
+      - if: ${{inputs.build-android}}
+        name: Replace {{VERSION_CODE}}
+        uses: ./workflow/actions/replace-placeholders
+        with:
+          replacements-in: "{{VERSION_CODE}}"
+          replacements-out: $((10000 * ${{ steps.semver.outputs.major }} + 100 * ${{ steps.semver.outputs.minor }} + ${{ steps.semver.outputs.patch }}))
       - name: Upload prepared repository
         uses: actions/upload-artifact@v3
         with:
