@@ -112,10 +112,10 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}     
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
-      - name: Clean Prerelease Versions
+      - name: Clean up old tags and releases
         if: github.ref == 'refs/heads/master'
-        uses: ./workflow/actions/github-clean-prerelease-versions
+        uses: ./workflow/actions/github-clean-tags-releases
         with:
-          repo: ${{ github.repository }}
+          keep: 10
           token: ${{ secrets.pat-github }}
-          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
+          semantic-version: ${{ steps.semver.outputs.semantic-version }}
