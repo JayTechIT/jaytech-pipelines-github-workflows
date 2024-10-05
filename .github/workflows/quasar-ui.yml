@@ -92,6 +92,10 @@ jobs:
           directory: 'workflow/repository/src-capacitor/android/app/'
           replacements-in: "{{VERSION_CODE}}"
           replacements-out: $((10000 * ${{ steps.semver.outputs.major }} + 100 * ${{ steps.semver.outputs.minor }} + ${{ steps.semver.outputs.patch }}))
+      - if: ${{ inputs.build-android }}
+        name: Verify build.gradle contents
+        run: |
+            cat workflow/repository/src-capacitor/android/app/build.gradle
       - name: Upload prepared repository
         uses: actions/upload-artifact@v3
         with:
