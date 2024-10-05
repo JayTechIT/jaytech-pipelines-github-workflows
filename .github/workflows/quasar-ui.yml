@@ -120,13 +120,13 @@ jobs:
     name: Build Quasar Android
     runs-on: ubuntu-latest
     steps:
-      - if: ${{inputs.build-android}} && github.ref == 'refs/heads/master'
+      - if: ${{ inputs.build-android }} == 'true' and github.ref == 'refs/heads/master'
         name: Download prepared repository
         uses: actions/download-artifact@v3
         with:
           name: workflow
           path: workflow
-      - if: ${{inputs.build-android}} && github.ref == 'refs/heads/master'
+      - if: ${{ inputs.build-android }} == 'true' and github.ref == 'refs/heads/master'
         name: Quasar Build Android
         uses: ./workflow/actions/quasar-build-android
         with:
