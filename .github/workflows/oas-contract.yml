@@ -27,6 +27,9 @@ on:
       azure-feed:
         description: The Azure Artifacts Feed
         required: false
+      package-icon-url:
+        description: HTTP URL to the icon file for the NuGet package
+        required: false        
 jobs:
   build-push-oas:
     name: Build + NuGet push
@@ -84,6 +87,7 @@ jobs:
           azure-feed: ${{secrets.azure-feed}}
           add-source: "false"
           dotnet-version: ${{inputs.dotnet-version}}
+          icon-url: ${{inputs.package-icon-url}}
       - name: Tag & Release
         uses: actions/create-release@v1                
         with:
