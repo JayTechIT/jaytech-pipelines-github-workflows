@@ -11,6 +11,7 @@ on:
         required: false
         default: "7.x"
       package-icon-url:
+        type: string
         description: HTTP URL to the icon file for the NuGet package
         required: false    
         default: ""
