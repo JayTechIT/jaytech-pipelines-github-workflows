@@ -10,6 +10,10 @@ on:
         description: Specify which .NET version to use
         required: false
         default: "7.x"
+      package-icon-url:
+        description: HTTP URL to the icon file for the NuGet package
+        required: false    
+        default: ""
       spectral-validation:
         type: boolean
         description: Validate the contract against JayTech's spectral rules?
@@ -27,9 +31,6 @@ on:
       azure-feed:
         description: The Azure Artifacts Feed
         required: false
-      package-icon-url:
-        description: HTTP URL to the icon file for the NuGet package
-        required: false        
 jobs:
   build-push-oas:
     name: Build + NuGet push
