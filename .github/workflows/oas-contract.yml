@@ -10,11 +10,6 @@ on:
         description: Specify which .NET version to use
         required: false
         default: "7.x"
-      package-icon-url:
-        type: string
-        description: HTTP URL to the icon file for the NuGet package
-        required: false    
-        default: ""
       spectral-validation:
         type: boolean
         description: Validate the contract against JayTech's spectral rules?
@@ -89,7 +84,6 @@ jobs:
           azure-feed: ${{secrets.azure-feed}}
           add-source: "false"
           dotnet-version: ${{inputs.dotnet-version}}
-          icon-url: ${{inputs.package-icon-url}}
       - name: Tag & Release
         uses: actions/create-release@v1                
         with:
