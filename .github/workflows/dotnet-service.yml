@@ -29,6 +29,11 @@ on:
         required: false
         type: string
         default: "false"
+      dotnet-version:
+        type: string
+        description: Specify which .NET version to use
+        required: false
+        default: "9.x"
     secrets:
       aws-region:
         description: The region in AWS to push to
@@ -74,6 +79,9 @@ jobs:
           repository: JayTechIT/jaytech-pipelines-github-actions
           token: ${{ secrets.pat-github }}
           path: workflow/actions
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{inputs.dotnet-version}}
       - name: Replace placeholders
         uses: ./workflow/actions/replace-placeholders
         with:

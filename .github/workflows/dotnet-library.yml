@@ -75,6 +75,9 @@ jobs:
           repository: JayTechIT/jaytech-pipelines-github-actions
           token: ${{ secrets.pat-github }}
           path: workflow/actions
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{inputs.dotnet-version}}
       - name: Replace placeholders
         uses: ./workflow/actions/replace-placeholders
         with:
