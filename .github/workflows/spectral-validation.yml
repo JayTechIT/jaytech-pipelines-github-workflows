@@ -12,7 +12,7 @@ on:
       aws-region:
         description: The AWS region
         required: false
-        default: "eu-west-1"        
+        default: "eu-west-1"
         type: string
       cloudfront-distribution:
         description: The AWS cloudfront distribution id
@@ -27,7 +27,7 @@ on:
         required: true
       pat-github:
         description: GitHub PAT
-        required: true      
+        required: true
 jobs:
   aws-s3-push:
     name: Push to AWS

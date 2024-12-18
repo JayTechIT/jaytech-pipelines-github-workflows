@@ -1,4 +1,4 @@
-on:  
+on:
   workflow_call:
     inputs:
       namespace:
@@ -9,7 +9,7 @@ on:
         type: string
         description: Specify which .NET version to use
         required: false
-        default: "7.x"
+        default: "9.x"
       spectral-validation:
         type: boolean
         description: Validate the contract against JayTech's spectral rules?
@@ -57,7 +57,7 @@ jobs:
         name: Validate spectral
         run: |
           npm install -g @stoplight/spectral
-          spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml          
+          spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml
       - name: Checkout client generator
         uses: actions/checkout@v3
         with:
@@ -85,12 +85,12 @@ jobs:
           add-source: "false"
           dotnet-version: ${{inputs.dotnet-version}}
       - name: Tag & Release
-        uses: actions/create-release@v1                
+        uses: actions/create-release@v1
         with:
           draft: false
           prerelease: false
           release_name: ${{ steps.semver.outputs.semantic-version }}
-          tag_name: ${{ steps.semver.outputs.semantic-version }}     
+          tag_name: ${{ steps.semver.outputs.semantic-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
       - name: Clean up old tags and releases

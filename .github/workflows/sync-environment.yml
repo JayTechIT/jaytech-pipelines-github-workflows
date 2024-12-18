@@ -14,7 +14,7 @@ on:
       cloudfront-distribution:
         description: The ID of the AWS Cloudfront distribution
         type: string
-        required: true      
+        required: true
       lambda-function:
         description: The name of the lambda function
         type: string
@@ -106,7 +106,7 @@ jobs:
         with:
           function-name: ${{inputs.lambda-function}}
           image-uri: ${{inputs.api-image-uri}}:${{steps.api-version.outputs.data}}
-      
+
   sync-ui:
     needs: preparations
     if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
