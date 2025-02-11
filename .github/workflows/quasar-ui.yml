@@ -97,7 +97,7 @@ jobs:
         run: |
             cat workflow/repository/src-capacitor/android/app/build.gradle
       - name: Upload prepared repository
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: workflow
           path: workflow
