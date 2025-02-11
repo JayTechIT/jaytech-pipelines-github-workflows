@@ -110,7 +110,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download prepared repository
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: workflow
           path: workflow
@@ -127,7 +127,7 @@ jobs:
     steps:
       - if: ${{inputs.build-android}}
         name: Download prepared repository
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: workflow
           path: workflow
@@ -145,7 +145,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download prepared repository
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: workflow
           path: workflow
@@ -168,7 +168,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.pat-github }}
       - if: ${{inputs.build-web}}
         name: Download WEB package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: quasar-build-web
           path: ./output/web
@@ -188,7 +188,7 @@ jobs:
           asset_content_type: application/gzip
       - if: ${{inputs.build-android}}
         name: Download WEB package
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: quasar-build-android
           path: ./output/android
