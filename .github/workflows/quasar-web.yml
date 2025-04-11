@@ -42,14 +42,14 @@ jobs:
           path: workflow/repository
           fetch-depth: 0
       - name: Replace placeholders
-        uses: ./workflow/actions/replace-placeholders
+        uses: JayTechIT/jaytech-pipelines-github-actions/replace-placeholders@master
         with:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{inputs.replacements-out}}
       - id: semver
-        uses: ./workflow/actions/gitversion-semver
+        uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: Quasar Build Web
-        uses: ./workflow/actions/quasar-build-web
+        uses: JayTechIT/jaytech-pipelines-github-actions/quasar-build-web@master
         with:
           folder: ${{inputs.source-folder}}
       - name: release
