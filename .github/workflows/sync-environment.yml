@@ -53,8 +53,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          repository: ${{ github.event.inputs.repository }}
-          token: ${{ secrets.pat-github }}
+          token: ${{ github.token }}
           path: workflow/repository
           fetch-depth: 0
       - id: set_vars
