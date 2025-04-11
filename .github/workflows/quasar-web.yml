@@ -74,6 +74,7 @@ jobs:
           quasar build
         shell: bash
       - name: Create release using GitHub CLI
+        working-directory: workflow/repository
         run: |
           gh release create "${{ steps.semver.outputs.semantic-version }}" \
             --title "${{ steps.semver.outputs.semantic-version }}" \
