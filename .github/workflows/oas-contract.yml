@@ -50,11 +50,22 @@ jobs:
           spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml
       - name: List NuGet sources
         run: dotnet nuget list source
-      - name: Install jaytech.clis.clientgeneration tool from Azure feed
+      - name: Restore global tools with NuGet.config
         run: |
-          dotnet tool install --global JayTech.Clis.ClientGeneration \
-            --add-source ${{ inputs.azure-feed }} \
-            --ignore-failed-sources
+          echo '<?xml version="1.0" encoding="utf-8"?>
+          <configuration>
+            <packageSources>
+              <add key="JayTech" value="${{ inputs.azure-feed }}" />
+            </packageSources>
+            <packageSourceCredentials>
+              <JayTech>
+                <add key="Username" value="az" />
+                <add key="ClearTextPassword" value="${{ secrets.azure-api-key }}" />
+              </JayTech>
+            </packageSourceCredentials>
+          </configuration>' > ~/.nuget/NuGet/NuGet.Config
+
+          dotnet tool install --global JayTech.Clis.ClientGeneration --ignore-failed-sources
       - name: Run dotnet-service generator
         run: |
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
