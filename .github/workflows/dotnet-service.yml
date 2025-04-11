@@ -112,23 +112,6 @@ jobs:
             --title "${{ steps.semver.outputs.semantic-version }}" \
             --notes "" \
             $([[ "${{ github.ref }}" != "refs/heads/master" ]] && echo "--prerelease")
-      - if: ${{ inputs.sync-environment == 'true' }}
-        name: Checkout GitOps
-        uses: actions/checkout@v3
-        with:
-          ref: "development"
-          repository: ${{ github.repository_owner }}/${{ inputs.application-name }}-${{inputs.environment-name}}
-          token: ${{secrets.pat-github}}
-          path: workflow/gitops
-      - if: ${{ inputs.sync-environment == 'true' }}
-        name: Set GitOps version
-        uses: fjogeleit/yaml-update-action@main
-        with:
-          valueFile: "./workflow/gitops/version-api.yml"
-          propertyPath: "version"
-          value: ${{ steps.semver.outputs.semantic-version }}
-          commitChange: false
-          updateFile: true
   sync-and-cleanup:
     name: Sync & Clean
     runs-on: ubuntu-latest
