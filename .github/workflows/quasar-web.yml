@@ -89,7 +89,7 @@ jobs:
           specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
       # TODO: Call to new JayTech endpoint
       - name: Sync version to Authorization Center
-        uses: JayTechIT/jaytech-pipelines-github-actions/.github/actions/sync-version@master
+        uses: JayTechIT/jaytech-pipelines-github-actions/sync-environment@master
         with:
           type: ui
           org: ${{ github.repository_owner }}
