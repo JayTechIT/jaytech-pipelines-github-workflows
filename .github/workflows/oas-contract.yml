@@ -1,0 +1,98 @@
+on:
+  workflow_call:
+    inputs:
+      namespace:
+        type: string
+        required: true
+      dotnet-version:
+        type: string
+        default: "9.x"
+      spectral-validation:
+        type: boolean
+        default: true
+    secrets:
+      azure-api-key:
+        required: false
+      azure-source:
+        required: false
+      azure-feed:
+        required: false
+
+jobs:
+  build-push-oas:
+    name: Build + NuGet Push
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ github.token }}
+          path: workflow/repository
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ inputs.dotnet-version }}
+      - name: Add Azure feed
+        run: dotnet nuget add source ${{ secrets.azure-feed }} --name ${{ secrets.azure-source }} --username az --password ${{ secrets.azure-api-key }} --store-password-in-clear-text
+      - id: semver
+        uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
+      - name: Set contract version
+        run: sed -i "s/{{OAS_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/src/oas.yaml
+      - if: ${{ inputs.spectral-validation == true }}
+        name: Validate spectral
+        run: |
+          npm install -g @stoplight/spectral
+          spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml
+      - name: Install dotnet-service tool
+        run: dotnet tool install --global dotnet-service
+      - name: Run dotnet-service generator
+        run: |
+          echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+          dotnet dotnet-service generate \
+            -c ./workflow/repository/src/oas.yaml \
+            -o ./workflow/repository/generated \
+            -n ${{ inputs.namespace }} \
+            -co JayTech.Products.${{ inputs.namespace }} \
+            -v ${{ steps.semver.outputs.semantic-version }}
+      
+      - name: Checkout client generator
+        uses: actions/checkout@v3
+        with:
+          repository: JayTechIT/jaytech-tools-clis-generators-client
+          token: ${{ github.token }}
+          path: workflow/client-generator
+          fetch-depth: 0
+      - name: Run Client Generator
+        run: |
+          sed -i "s~{{IN}}~../../../../../workflow/repository/src/oas.yaml~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
+          sed -i "s~{{OUT}}~../../../../../workflow/repository/generated~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
+          sed -i "s~{{NAMESPACE}}~${{ inputs.namespace }}~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
+          cd ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration
+          dotnet run --launch-profile Production
+      - name: NuGet Push
+        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-publish-nuget@master
+        with:
+          software-version: ${{ steps.semver.outputs.semantic-version }}
+          project-folder: ./workflow/repository/generated
+          azure-api-key: ${{ secrets.azure-api-key }}
+          azure-source: ${{ secrets.azure-source }}
+          azure-feed: ${{ secrets.azure-feed }}
+          add-source: "false"
+          dotnet-version: ${{ inputs.dotnet-version }}
+      - name: Create release using GitHub CLI
+        working-directory: workflow/repository
+        run: |
+          gh release create "${{ steps.semver.outputs.semantic-version }}" \
+            --title "${{ steps.semver.outputs.semantic-version }}" \
+            --notes "" \
+            $([[ "${{ github.ref }}" != "refs/heads/master" ]] && echo "--prerelease")
+      - name: Clean old tags and releases
+        if: github.ref == 'refs/heads/master'
+        uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-tags-releases@master
+        with:
+          keep: 10
+          token: ${{ github.token }}
+          semantic-version: ${{ steps.semver.outputs.semantic-version }}
