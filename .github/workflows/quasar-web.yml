@@ -25,8 +25,6 @@ on:
         description: Replacement values separated by a semicolon (;)
         required: false
     secrets:
-      github-token:
-        required: false
       jaytech-credential:
         required: true
 
@@ -87,13 +85,19 @@ jobs:
         working-directory: workflow/repository/dist/spa
         run: |
           gh release upload "${{ steps.semver.outputs.semantic-version }}" quasar-web.tar.gz --clobber
+  sync-and-cleanup:
+    name: Sync Environment & Clean Up
+    runs-on: ubuntu-latest
+    needs: build-web
+    if: ${{ always() }}
+    steps:
       - name: Sync environment via Authorization Center
         uses: JayTechIT/jaytech-pipelines-github-actions/sync-environment@master
         with:
           type: ui
           org: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
-          version: ${{ steps.semver.outputs.semantic-version }}
+          version: ${{ needs.build-web.outputs.version }}
           message: ${{ github.event.head_commit.message }}
           jaytech-credential-key: ${{ secrets.jaytech-credential }}
       - name: Clean Prerelease Versions
@@ -101,11 +105,11 @@ jobs:
         uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-prerelease-versions@master
         with:
           repo: ${{ github.repository }}
-          token: ${{ secrets.github-token }}
-          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
+          token: ${{ github.token }}
+          specifiedVersion: ${{ needs.build-web.outputs.version }}
       - name: Clean up old tags and releases
         uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-tags-releases@master
         with:
           keep: 10
-          token: ${{ secrets.github-token }}
-          semantic-version: ${{ steps.semver.outputs.semantic-version }}
+          token: ${{ github.token }}
+          semantic-version: ${{ needs.build-web.outputs.version }}
