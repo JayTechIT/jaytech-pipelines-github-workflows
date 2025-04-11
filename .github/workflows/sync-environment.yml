@@ -41,6 +41,9 @@ on:
       jaytech-credential:
         description: JayTech credential key
         required: true
+      pat-github:
+        description: GITHUB PAT
+        required: true
 
 jobs:
   preparations:
@@ -131,7 +134,7 @@ jobs:
 
   sync-ui:
     needs: preparations
-    if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
+    #if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
