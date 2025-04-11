@@ -1,0 +1,103 @@
+on:
+  workflow_call:
+    inputs:
+      application-name:
+        type: string
+        description: The application name (repository name without api/contract/ui)
+        required: true
+      environment-name:
+        type: string
+        description: The keyword used to define your environment repository
+        required: false
+        default: environment
+      replacements-in:
+        type: string
+        description: Replacement placeholders separated by a semicolon (;)
+        required: false
+        default: ""
+      source-folder:
+        type: string
+        description: Root folder of the source code
+        required: false
+        default: "./workflow/repository"
+      replacements-out:
+        type: string
+        description: Replacement values separated by a semicolon (;)
+        required: false
+    secrets:
+      github-token: ${{ github.token }}
+      jaytech-credential: ${{ secrets.jaytech-credential}}
+
+jobs:
+  build-web:
+    name: Quasar Preparations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository_owner }}/${{ inputs.application-name }}-ui
+          token: ${{ secrets.github-token }}
+          path: workflow/repository
+          fetch-depth: 0
+      - name: Replace placeholders
+        uses: ./workflow/actions/replace-placeholders
+        with:
+          replacements-in: ${{inputs.replacements-in}}
+          replacements-out: ${{inputs.replacements-out}}
+      - id: semver
+        uses: ./workflow/actions/gitversion-semver
+      - name: Quasar Build Web
+        uses: ./workflow/actions/quasar-build-web
+        with:
+          folder: ${{inputs.source-folder}}
+      - name: release
+        uses: actions/create-release@v1
+        id: create_release
+        with:
+          draft: false
+          prerelease: ${{ github.ref != 'refs/heads/master' }}
+          release_name: ${{ steps.semver.outputs.semantic-version }}
+          tag_name: ${{ steps.semver.outputs.semantic-version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.github-token }}
+      - name: Download WEB package
+        uses: actions/download-artifact@v4
+        with:
+          name: quasar-build-web
+          path: ./output/web
+      - name: TAR WEB
+        run: |
+          tar -czvf ./output/web/quasar-web.tar.gz ./output/web/*
+      - name: Upload quasar-web to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.github-token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./output/web/quasar-web.tar.gz
+          asset_name: quasar-web.tar.gz
+          asset_content_type: application/gzip
+      - name: Clean Prerelease Versions
+        if: github.ref == 'refs/heads/master'
+        uses: ./workflow/actions/github-clean-prerelease-versions
+        with:
+          repo: ${{ github.repository }}
+          token: ${{ secrets.github-token }}
+          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
+      # TODO: Call to new JayTech endpoint
+      - name: Sync version to Authorization Center
+        uses: JayTechIT/jaytech-pipelines-github-actions/.github/actions/sync-version@master
+        with:
+          type: ui
+          org: ${{ github.repository_owner }}
+          repo: ${{ github.event.repository.name }}
+          version: ${{ steps.semver.outputs.semantic-version }}
+          message: ${{ github.event.head_commit.message }}
+          jaytech-credential-key: ${{ secrets.jaytech-credential }}
+      - name: Clean up old tags and releases
+        uses: ./workflow/actions/github-clean-tags-releases
+        with:
+          keep: 10
+          token: ${{ secrets.github-token }}
+          semantic-version: ${{ steps.semver.outputs.semantic-version }}
