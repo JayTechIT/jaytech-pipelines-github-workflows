@@ -75,7 +75,7 @@ jobs:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{secrets.replacements-out}}
       - name: .NET Test
-        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-test
+        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-test@master
         with:
           solution-path: ${{inputs.solution-location}}
           azure-feed: ${{secrets.azure-feed}}
@@ -84,7 +84,7 @@ jobs:
       - id: semver
         uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: nuget-push
-        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-publish-nuget
+        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-publish-nuget@master
         with:
           software-version: ${{ steps.semver.outputs.semantic-version }}
           project-folder: workflow/repository/Source
