@@ -82,16 +82,11 @@ jobs:
             $([[ "${{ github.ref }}" != "refs/heads/master" ]] && echo "--prerelease")
       - name: TAR WEB
         run: |
-          tar -czvf ./output/web/quasar-web.tar.gz workflow/repository/dist/spa/*
-      - name: Upload quasar-web to release
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.github-token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./output/web/quasar-web.tar.gz
-          asset_name: quasar-web.tar.gz
-          asset_content_type: application/gzip
+          tar -czvf workflow/repository/dist/spa/quasar-web.tar.gz workflow/repository/dist/spa/*
+      - name: Upload quasar-web to GitHub Release
+        working-directory: workflow/repository/dist/spa
+        run: |
+          gh release upload "${{ steps.semver.outputs.semantic-version }}" quasar-web.tar.gz --clobber
       - name: Clean Prerelease Versions
         if: github.ref == 'refs/heads/master'
         uses: ./workflow/actions/github-clean-prerelease-versions
