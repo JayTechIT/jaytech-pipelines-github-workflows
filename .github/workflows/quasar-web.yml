@@ -98,7 +98,7 @@ jobs:
         with:
           type: ui
           org: ${{ github.repository_owner }}
-          repo: ${{ github.event.repository.name }}
+          repo: ${{ inputs.application-name }}-environment
           version: ${{ needs.build-web.outputs.version }}
           message: ${{ github.event.head_commit.message }}
           jaytech-credential-key: ${{ secrets.jaytech-credential }}
