@@ -50,9 +50,9 @@ jobs:
         uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: Use project-level .npmrc if present
         run: |
-          if [ -f "${{ inputs.folder }}/.npmrc" ]; then
+          if [ -f "workflow/repository/.npmrc" ]; then
             echo "Using repo .npmrc"
-            cp "${{ inputs.folder }}/.npmrc" ~/.npmrc
+            cp "workflow/repository/.npmrc" ~/.npmrc
           else
             echo "No .npmrc found in project"
           fi
