@@ -1,0 +1,58 @@
+on:
+  workflow_call:
+    inputs:
+      repository:
+        description: Repository name; format = [organization]/[repository-name]
+        required: true
+        type: string
+      aws-s3-bucket:
+        description: The name of the AWS s3 bucket
+        required: true
+        type: string
+      aws-region:
+        description: The AWS region
+        required: false
+        default: "eu-west-1"
+        type: string
+      cloudfront-distribution:
+        description: The AWS cloudfront distribution id
+        required: true
+        type: string
+    secrets:
+      aws-access-key-id:
+        description: The AWS access key ID
+        required: true
+      aws-secret-access-key:
+        description: The AWS secret access key
+        required: true
+jobs:
+  aws-s3-push:
+    name: Push to AWS
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ github.token }}
+          path: workflow/repository
+          fetch-depth: 0
+      - name: Push to Amazon S3
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ inputs.aws-s3-bucket }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
+          AWS_REGION: ${{inputs.aws-region}}
+          SOURCE_DIR: workflow/repository
+      - name: Invalidate CloudFront
+        uses: chetan/invalidate-cloudfront-action@v2
+        env:
+          DISTRIBUTION: ${{ inputs.cloudfront-distribution }}
+          PATHS: "/*"
+          AWS_REGION: ${{ inputs.aws-region }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
