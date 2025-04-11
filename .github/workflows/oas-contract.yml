@@ -63,20 +63,13 @@ jobs:
             -n ${{ inputs.namespace }} \
             -co JayTech.Products.${{ inputs.namespace }} \
             -v ${{ steps.semver.outputs.semantic-version }}
-      - name: Checkout client generator
-        uses: actions/checkout@v3
-        with:
-          repository: JayTechIT/jaytech-tools-clis-generators-client
-          token: ${{ github.token }}
-          path: workflow/client-generator
-          fetch-depth: 0
-      - name: Run Client Generator
-        run: |
-          sed -i "s~{{IN}}~../../../../../workflow/repository/src/oas.yaml~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
-          sed -i "s~{{OUT}}~../../../../../workflow/repository/generated~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
-          sed -i "s~{{NAMESPACE}}~${{ inputs.namespace }}~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
-          cd ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration
-          dotnet run --launch-profile Production
+      # - name: Run Client Generator
+      #   run: |
+      #     sed -i "s~{{IN}}~../../../../../workflow/repository/src/oas.yaml~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
+      #     sed -i "s~{{OUT}}~../../../../../workflow/repository/generated~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
+      #     sed -i "s~{{NAMESPACE}}~${{ inputs.namespace }}~g" ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration/Properties/launchSettings.json
+      #     cd ./workflow/client-generator/Source/Assemblies/JayTech.Clis.ClientGeneration
+      #     dotnet run --launch-profile Production
       - name: NuGet Push
         uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-publish-nuget@master
         with:
