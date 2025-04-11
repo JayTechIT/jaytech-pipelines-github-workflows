@@ -52,6 +52,28 @@ jobs:
         uses: JayTechIT/jaytech-pipelines-github-actions/quasar-build-web@master
         with:
           folder: ${{inputs.source-folder}}
+      - name: Use project-level .npmrc if present
+        run: |
+          if [ -f "${{ inputs.folder }}/.npmrc" ]; then
+            echo "Using repo .npmrc"
+            cp "${{ inputs.folder }}/.npmrc" ~/.npmrc
+          else
+            echo "No .npmrc found in project"
+          fi
+        shell: bash
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20
+      - name: Quasar Build Web
+        working-directory: workflow/repository
+        run: |
+          npm install
+          npm i -g @quasar/cli
+          # Run ESLint but ignore errors
+          npm run lint || true
+          quasar build
+        shell: bash
       - name: release
         uses: actions/create-release@v1
         id: create_release
@@ -62,14 +84,9 @@ jobs:
           tag_name: ${{ steps.semver.outputs.semantic-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.github-token }}
-      - name: Download WEB package
-        uses: actions/download-artifact@v4
-        with:
-          name: quasar-build-web
-          path: ./output/web
       - name: TAR WEB
         run: |
-          tar -czvf ./output/web/quasar-web.tar.gz ./output/web/*
+          tar -czvf ./output/web/quasar-web.tar.gz workflow/repository/dist/spa/*
       - name: Upload quasar-web to release
         uses: actions/upload-release-asset@v1
         env:
