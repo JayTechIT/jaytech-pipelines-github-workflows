@@ -91,7 +91,6 @@ jobs:
     name: Sync & Clean
     runs-on: ubuntu-latest
     needs: build-web
-    if: ${{ always() }}
     steps:
       - name: Sync environment via Authorization Center
         uses: JayTechIT/jaytech-pipelines-github-actions/sync-environment@master

@@ -73,6 +73,8 @@ jobs:
         with:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{secrets.replacements-out}}
+      - id: semver
+        uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: .NET Test
         uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-test@master
         with:
@@ -80,8 +82,6 @@ jobs:
           azure-feed: ${{inputs.azure-feed}}
           azure-source: ${{inputs.azure-source}}
           azure-api-key: ${{secrets.azure-api-key}}
-      - id: semver
-        uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: nuget-push
         uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-publish-nuget@master
         with:
