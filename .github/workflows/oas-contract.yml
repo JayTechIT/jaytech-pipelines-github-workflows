@@ -49,9 +49,9 @@ jobs:
       - name: List NuGet sources
         run: dotnet nuget list source
 
-      - name: Install dotnet-service tool from Azure feed
+      - name: Install jaytech.clis.clientgeneration tool from Azure feed
         run: |
-          dotnet tool install --global dotnet-service \
+          dotnet tool install --global jaytech.clis.clientgeneration \
             --add-source ${{ secrets.azure-feed }} \
             --ignore-failed-sources
       - name: Run dotnet-service generator
@@ -64,7 +64,6 @@ jobs:
             -n ${{ inputs.namespace }} \
             -co JayTech.Products.${{ inputs.namespace }} \
             -v ${{ steps.semver.outputs.semantic-version }}
-      
       - name: Checkout client generator
         uses: actions/checkout@v3
         with:
