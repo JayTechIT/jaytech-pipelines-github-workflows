@@ -177,7 +177,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.aws-access-key-id }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.aws-secret-access-key }}
           AWS_REGION: ${{ inputs.aws-region }}
-          SOURCE_DIR: './output/web'
+          SOURCE_DIR: 'workflow/repository/dist/spa'
       - name: Invalidate CloudFront
         uses: chetan/invalidate-cloudfront-action@v2
         env:
