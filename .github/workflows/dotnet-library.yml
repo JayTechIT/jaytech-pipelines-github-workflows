@@ -108,5 +108,5 @@ jobs:
         uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-tags-releases@master
         with:
           keep: 10
-          token: ${{ secrets.pat-github }}
+          token: ${{ github.token }}
           semantic-version: ${{ steps.semver.outputs.semantic-version }}
