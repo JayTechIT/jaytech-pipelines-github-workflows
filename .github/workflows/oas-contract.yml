@@ -40,37 +40,24 @@ jobs:
       - name: Add Azure feed
         run: dotnet nuget add source ${{ inputs.azure-feed }} --name ${{ inputs.azure-source }} --username az --password ${{ secrets.azure-api-key }} --store-password-in-clear-text
       - id: semver
+        name: Determine semantic version
         uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: Set contract version
         run: sed -i "s/{{OAS_VERSION}}/${{ steps.semver.outputs.semantic-version }}/g" ./workflow/repository/src/oas.yaml
       - if: ${{ inputs.spectral-validation == true }}
         name: Validate spectral
         run: |
-          npm install -g @stoplight/spectral
+          npm install -g @stoplight/spectral-cli
           spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml
       - name: List NuGet sources
         run: dotnet nuget list source
-      - name: Restore global tools with NuGet.config
-        run: |
-          echo '<?xml version="1.0" encoding="utf-8"?>
-          <configuration>
-            <packageSources>
-              <add key="JayTech" value="${{ inputs.azure-feed }}" />
-            </packageSources>
-            <packageSourceCredentials>
-              <JayTech>
-                <add key="Username" value="az" />
-                <add key="ClearTextPassword" value="${{ secrets.azure-api-key }}" />
-              </JayTech>
-            </packageSourceCredentials>
-          </configuration>' > ~/.nuget/NuGet/NuGet.Config
-
-          dotnet tool install --global JayTech.Clis.ClientGeneration --ignore-failed-sources
+      - name: Install Client Generator
+        run: dotnet tool install --global JayTech.Clis.ClientGeneration --ignore-failed-sources
       - name: Run dotnet-service generator
         run: |
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
 
-          dotnet dotnet-service generate \
+          dotnet-client generate \
             -c ./workflow/repository/src/oas.yaml \
             -o ./workflow/repository/generated \
             -n ${{ inputs.namespace }} \
