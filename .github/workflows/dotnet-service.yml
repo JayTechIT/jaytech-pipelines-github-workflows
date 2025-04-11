@@ -83,6 +83,9 @@ jobs:
         with:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{secrets.replacements-out}}
+      - name: 🔍 List all NuGet sources
+        run: dotnet nuget list source
+
       - id: semver
         uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: .NET Test
@@ -147,4 +150,4 @@ jobs:
         with:
           keep: 10
           token: ${{ github.token }}
-          semantic-version: ${{ steps.semver.outputs.semantic-version }}
+          semantic-version: ${{ needs.dotnet-service-pipeline.outputs.version }}
