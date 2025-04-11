@@ -78,8 +78,6 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{inputs.dotnet-version}}
-      - name: Add Azure feed
-        run: dotnet nuget add source ${{ inputs.azure-feed }} --name ${{ inputs.azure-source }} --username az --password ${{ secrets.azure-api-key }} --store-password-in-clear-text
       - name: Replace placeholders
         uses: JayTechIT/jaytech-pipelines-github-actions/replace-placeholders@master
         with:
