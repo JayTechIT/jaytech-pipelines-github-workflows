@@ -83,17 +83,10 @@ jobs:
       - name: TAR WEB
         run: |
           tar -czvf workflow/repository/dist/spa/quasar-web.tar.gz workflow/repository/dist/spa/*
-      - name: Upload quasar-web to GitHub Release
+      - name: Add build output to release
         working-directory: workflow/repository/dist/spa
         run: |
           gh release upload "${{ steps.semver.outputs.semantic-version }}" quasar-web.tar.gz --clobber
-      - name: Clean Prerelease Versions
-        if: github.ref == 'refs/heads/master'
-        uses: ./workflow/actions/github-clean-prerelease-versions
-        with:
-          repo: ${{ github.repository }}
-          token: ${{ secrets.github-token }}
-          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
       - name: Sync environment via Authorization Center
         uses: JayTechIT/jaytech-pipelines-github-actions/sync-environment@master
         with:
@@ -103,8 +96,15 @@ jobs:
           version: ${{ steps.semver.outputs.semantic-version }}
           message: ${{ github.event.head_commit.message }}
           jaytech-credential-key: ${{ secrets.jaytech-credential }}
+      - name: Clean Prerelease Versions
+        if: github.ref == 'refs/heads/master'
+        uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-prerelease-versions@master
+        with:
+          repo: ${{ github.repository }}
+          token: ${{ secrets.github-token }}
+          specifiedVersion: ${{ steps.semver.outputs.semantic-version }}
       - name: Clean up old tags and releases
-        uses: ./workflow/actions/github-clean-tags-releases
+        uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-tags-releases@master
         with:
           keep: 10
           token: ${{ secrets.github-token }}
