@@ -26,7 +26,7 @@ on:
         required: false
     secrets:
       github-token:
-        required: true
+        required: false
       jaytech-credential:
         required: true
 
@@ -34,6 +34,8 @@ jobs:
   build-web:
     name: Quasar Web Pipeline
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -72,8 +74,6 @@ jobs:
           quasar build
         shell: bash
       - name: Create release using GitHub CLI
-        env:
-          GH_TOKEN: ${{ secrets.github-token }}
         run: |
           gh release create "${{ steps.semver.outputs.semantic-version }}" \
             --title "${{ steps.semver.outputs.semantic-version }}" \
