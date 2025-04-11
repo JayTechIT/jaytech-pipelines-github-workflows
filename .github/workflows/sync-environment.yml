@@ -167,7 +167,7 @@ jobs:
           tag: ${{steps.ui-version.outputs.data}}
           fileName: "quasar-web.tar.gz"
           extract: true
-          token: ${{secrets.pat-github}}
+          token: ${{env.GITHUB_PAT}}
       - name: Push to Amazon S3
         uses: jakejarvis/s3-sync-action@master
         with:
