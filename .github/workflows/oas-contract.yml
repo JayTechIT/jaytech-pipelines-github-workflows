@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
+      NUGET_AUTH_TOKEN: ${{ secrets.azure-api-key }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -45,8 +46,15 @@ jobs:
         run: |
           npm install -g @stoplight/spectral
           spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml
-      - name: Install dotnet-service tool
-        run: dotnet tool install --global dotnet-service
+      - name: List NuGet sources
+        run: dotnet nuget list source
+
+      - name: Install dotnet-service tool from Azure feed
+        run: |
+          dotnet tool install --global dotnet-service \
+            --add-source ${{ secrets.azure-feed }} \
+            --nuget-source ${{ secrets.azure-feed }} \
+            --ignore-failed-sources
       - name: Run dotnet-service generator
         run: |
           echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
