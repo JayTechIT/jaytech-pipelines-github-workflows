@@ -133,10 +133,12 @@ jobs:
     if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          path: ./workflow/repository
+          token: ${{ github.token }}
+          path: workflow/repository
+          fetch-depth: 0
       - name: Fetch UI version
         id: ui-version
         uses: KJ002/read-yaml@main
