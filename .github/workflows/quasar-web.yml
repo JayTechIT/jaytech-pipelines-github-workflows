@@ -32,7 +32,7 @@ on:
 
 jobs:
   build-web:
-    name: Quasar Preparations
+    name: Quasar Web Pipeline
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
