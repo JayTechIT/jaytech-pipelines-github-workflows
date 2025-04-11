@@ -73,7 +73,7 @@ jobs:
         shell: bash
       - name: Create release using GitHub CLI
         env:
-          GITHUB_TOKEN: ${{ secrets.github-token }}
+          GH_TOKEN: ${{ secrets.github-token }}
         run: |
           gh release create "${{ steps.semver.outputs.semantic-version }}" \
             --title "${{ steps.semver.outputs.semantic-version }}" \
