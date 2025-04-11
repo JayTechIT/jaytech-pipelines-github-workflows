@@ -48,10 +48,6 @@ jobs:
           replacements-out: ${{inputs.replacements-out}}
       - id: semver
         uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
-      - name: Quasar Build Web
-        uses: JayTechIT/jaytech-pipelines-github-actions/quasar-build-web@master
-        with:
-          folder: ${{inputs.source-folder}}
       - name: Use project-level .npmrc if present
         run: |
           if [ -f "${{ inputs.folder }}/.npmrc" ]; then
