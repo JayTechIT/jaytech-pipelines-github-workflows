@@ -56,6 +56,8 @@ jobs:
   dotnet-library-pipeline:
     name: .NET Library Pipeline
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -64,32 +66,25 @@ jobs:
           token: ${{ secrets.pat-github }}
           path: workflow/repository
           fetch-depth: 0
-      - name: Checkout JayTech actions
-        uses: actions/checkout@v3
-        with:
-          ref: master
-          repository: JayTechIT/jaytech-pipelines-github-actions
-          token: ${{ secrets.pat-github }}
-          path: workflow/actions
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{inputs.dotnet-version}}
       - name: Replace placeholders
-        uses: ./workflow/actions/replace-placeholders
+        uses: JayTechIT/jaytech-pipelines-github-actions/replace-placeholders@master
         with:
           replacements-in: ${{inputs.replacements-in}}
           replacements-out: ${{secrets.replacements-out}}
       - name: .NET Test
-        uses: ./workflow/actions/dotnet-test
+        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-test
         with:
           solution-path: ${{inputs.solution-location}}
           azure-feed: ${{secrets.azure-feed}}
           azure-source: ${{secrets.azure-source}}
           azure-api-key: ${{secrets.azure-api-key}}
       - id: semver
-        uses: ./workflow/actions/gitversion-semver
+        uses: JayTechIT/jaytech-pipelines-github-actions/gitversion-semver@master
       - name: nuget-push
-        uses: ./workflow/actions/dotnet-publish-nuget
+        uses: JayTechIT/jaytech-pipelines-github-actions/dotnet-publish-nuget
         with:
           software-version: ${{ steps.semver.outputs.semantic-version }}
           project-folder: workflow/repository/Source
@@ -101,19 +96,17 @@ jobs:
           nuget: ${{inputs.nuget}}
           dotnet-version: ${{inputs.dotnet-version}}
           add-source: false
-      - name: Tag & Release
-        uses: actions/create-release@v1
+      - name: Add release version to repository
         if: contains('refs/heads/master', github.ref)
-        with:
-          draft: false
-          prerelease: ${{ github.ref != 'refs/heads/master' }}
-          release_name: ${{ steps.semver.outputs.semantic-version }}
-          tag_name: ${{ steps.semver.outputs.semantic-version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.pat-github }}
+        working-directory: workflow/repository
+        run: |
+          gh release create "${{ steps.semver.outputs.semantic-version }}" \
+            --title "${{ steps.semver.outputs.semantic-version }}" \
+            --notes "" \
+            $([[ "${{ github.ref }}" != "refs/heads/master" ]] && echo "--prerelease")
       - name: Clean up old tags and releases
         if: github.ref == 'refs/heads/master'
-        uses: ./workflow/actions/github-clean-tags-releases
+        uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-tags-releases@master
         with:
           keep: 10
           token: ${{ secrets.pat-github }}
