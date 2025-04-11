@@ -53,6 +53,7 @@ jobs:
           if [ -f "workflow/repository/.npmrc" ]; then
             echo "Using repo .npmrc"
             cp "workflow/repository/.npmrc" ~/.npmrc
+            cat ~/.npmrc
           else
             echo "No .npmrc found in project"
           fi
