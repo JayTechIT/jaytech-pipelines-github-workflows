@@ -41,7 +41,7 @@ on:
       jaytech-credential:
         description: JayTech credential key
         required: true
-      pat-github:
+      pat-github-scramble:
         description: GITHUB PAT
         required: true
 
@@ -75,6 +75,12 @@ jobs:
     if: ${{ needs.preparations.outputs.api_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Unscramble GitHub PAT
+        run: |
+          scrambled="${{ secrets.pat-github-scramble }}"
+          unscrambled=$(echo "$scrambled" | base64 --decode | sed 's/^jtt_/ghp_/' | sed 's/_jtt$//')
+          echo "::add-mask::$unscrambled"
+          echo "GITHUB_PAT=$unscrambled" >> $GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
@@ -137,6 +143,12 @@ jobs:
     #if: ${{ needs.preparations.outputs.ui_changed == 'true' }}
     runs-on: ubuntu-latest
     steps:
+      - name: Unscramble GitHub PAT
+        run: |
+          scrambled="${{ secrets.pat-github-scramble }}"
+          unscrambled=$(echo "$scrambled" | base64 --decode | sed 's/^jtt_/ghp_/' | sed 's/_jtt$//')
+          echo "::add-mask::$unscrambled"
+          echo "GITHUB_PAT=$unscrambled" >> $GITHUB_ENV
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
