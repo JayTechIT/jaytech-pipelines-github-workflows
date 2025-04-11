@@ -96,6 +96,10 @@ jobs:
         name: Verify build.gradle contents
         run: |
             cat workflow/repository/src-capacitor/android/app/build.gradle
+      - name: Rename dotfiles to avoid artifact filtering
+        run: |          
+          [ -f workflow/repository/.npmrc ] && mv workflow/repository/.npmrc workflow/repository/npmrc.safe
+        shell: bash
       - name: Upload prepared repository
         uses: actions/upload-artifact@v4
         with:
@@ -114,6 +118,15 @@ jobs:
         with:
           name: workflow
           path: workflow
+      - name: Restore dotfiles after artifact download
+        run: |
+          if [ -f "${{ inputs.source-folder }}/npmrc.safe" ]; then
+            mv "${{ inputs.source-folder }}/npmrc.safe" "${{ inputs.source-folder }}/.npmrc"
+            echo "Restored npmrc.safe → .npmrc"
+          else
+            echo "No npmrc.safe found to restore"
+          fi
+        shell: bash
       - name: Quasar Build Web
         uses: ./workflow/actions/quasar-build-web
         with:
