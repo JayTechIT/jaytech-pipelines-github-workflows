@@ -49,8 +49,6 @@ jobs:
         run: |
           npm install -g @stoplight/spectral-cli
           spectral lint ./workflow/repository/src/oas.yaml -r https://spectral.jaytech.nl/spectral-ruleset.yaml
-      - name: List NuGet sources
-        run: dotnet nuget list source
       - name: Install Client Generator
         run: dotnet tool install --global JayTech.Clis.ClientGeneration --ignore-failed-sources
       - name: Run dotnet-service generator
@@ -61,7 +59,6 @@ jobs:
             -c ./workflow/repository/src/oas.yaml \
             -o ./workflow/repository/generated \
             -n ${{ inputs.namespace }} \
-            -co JayTech.Products.${{ inputs.namespace }} \
             -v ${{ steps.semver.outputs.semantic-version }}
       # - name: Run Client Generator
       #   run: |
