@@ -101,13 +101,6 @@ jobs:
           version: ${{ needs.build-web.outputs.version }}
           message: ${{ github.event.head_commit.message }}
           jaytech-credential-key: ${{ secrets.jaytech-credential }}
-      - name: Clean Prerelease Versions
-        if: github.ref == 'refs/heads/master'
-        uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-prerelease-versions@master
-        with:
-          repo: ${{ github.repository }}
-          token: ${{ github.token }}
-          specifiedVersion: ${{ needs.build-web.outputs.version }}
       - name: Clean up old tags and releases
         uses: JayTechIT/jaytech-pipelines-github-actions/github-clean-tags-releases@master
         with:
