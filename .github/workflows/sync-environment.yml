@@ -107,27 +107,27 @@ jobs:
           AUTH_URL="https://api.authorization-center.jaytech.nl/v3/secrets"
 
           env_vars=""
-          jq -r 'to_entries[] | "\(.key)=\(.value)"' "$CONFIG_FILE" | while IFS='=' read -r key value; do
+          while IFS='=' read -r key value; do
             if [[ "$value" == secret:* ]]; then
               SECRET_NAME="${value#secret:}"
               echo "🔐 Fetching secret: $SECRET_NAME"
-              secret_value=$(curl -s -H "$AUTH_HEADER" "$AUTH_URL/$SECRET_NAME")
-              if [[ -z "$secret_value" ]]; then
+              value=$(curl -s -H "$AUTH_HEADER" "$AUTH_URL/$SECRET_NAME")
+              if [[ -z "$value" ]]; then
                 echo "❌ Failed to fetch $SECRET_NAME"
                 exit 1
               fi
-              value="$secret_value"
             fi
-            env_vars+="$key=$(jq -Rn --arg v "$value" '$v')"$'\n'
-          done
+            quoted_val=$(jq -Rn --arg v "$value" '$v')
+            env_vars+="$key=$quoted_val"$'\n'
+          done < <(jq -r 'to_entries[] | "\(.key)=\(.value)"' "$CONFIG_FILE")
+
+          if [[ -z "$env_vars" ]]; then
+            echo "❌ No environment variables were resolved. Aborting."
+            exit 1
+          fi
 
           env_vars_formatted=$(echo "$env_vars" | paste -sd, -)
           echo "✅ Final env: $env_vars_formatted"
-
-          echo "🔍 Raw env_vars:"
-          echo "$env_vars"
-          echo "🔍 Formatted:"
-          echo "$env_vars_formatted"
 
           aws lambda update-function-configuration \
             --function-name ${{inputs.lambda-function}} \
@@ -142,6 +142,7 @@ jobs:
         with:
           function-name: ${{inputs.lambda-function}}
           image-uri: ${{inputs.api-image-uri}}:${{steps.api-version.outputs.data}}
+
 
   sync-ui:
     needs: preparations
