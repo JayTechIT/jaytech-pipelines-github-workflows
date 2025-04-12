@@ -124,6 +124,11 @@ jobs:
           env_vars_formatted=$(echo "$env_vars" | paste -sd, -)
           echo "✅ Final env: $env_vars_formatted"
 
+          echo "🔍 Raw env_vars:"
+          echo "$env_vars"
+          echo "🔍 Formatted:"
+          echo "$env_vars_formatted"
+
           aws lambda update-function-configuration \
             --function-name ${{inputs.lambda-function}} \
             --environment "Variables={${env_vars_formatted}}"
