@@ -39,20 +39,16 @@ on:
         type: string
         description: Root folder of the source code
         required: false
-        default: "./workflow/repository"
-      key-store-password:
-        type: string
-        description: The keystore password
-        required: true
+        default: "./workflow/repository"      
+    secrets:
       pat-github:
-        type: string
         description: GitHub PAT
         required: true
+      key-store-password: 
+        required: true
       replacements-out:
-        type: string
         description: Replacement values separated by a semicolon (;)
         required: false
-
 jobs:
   preparations:
     name: Quasar Preparations
